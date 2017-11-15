@@ -144,6 +144,22 @@ if ($result !== true) exit($result . "\n");
 $insertCount = 0;
 $updateCount = 0;
 
+
+		/* This should be the same hash used in MediaWiki */
+function getImageHashPath($name) 
+{
+	$levels = 2;	/* 2 for hashed upload directory, 0 for non-hashed */
+	
+	$hash = md5( $name );
+	$path = '';
+	for ( $i = 1; $i <= $levels; $i++ ) {
+		$path .= substr( $hash, 0, $i ) . '/';
+	}
+
+	return $path;
+}
+
+
 foreach ($cards as $name => $card)
 {
 	$text = $card['ability'];			if ($text == null) $text = "";
@@ -168,7 +184,14 @@ foreach ($cards as $name => $card)
 	//print ("$text\n");
 	
 	$image = preg_replace("# #", "_", $image);
-	$image = preg_replace("#'#", "%27", $image);
+	$image = preg_replace("#&\#39;#", "'", $image);
+	$hash = getImageHashPath($image);
+	//$image = preg_replace("#'#", "%27", $image);
+	$image = "/" . $hash . $image;
+	//print($image."\n");
+	
+	$filename = "/home/uesp/www/w/images" . $image;
+	if (!file_exists($filename)) print("\t\tWarning: $name image file '$image' doesn't exist!\n");
 	
 	$text = $db->real_escape_string($text);
 	$name = $db->real_escape_string($name);
