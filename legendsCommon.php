@@ -30,7 +30,7 @@ function CreateLegendsTables($db)
 						`class` TINYTEXT NOT NULL,
 						obtainable TINYINT(1) NOT NULL DEFAULT 0,
 						training TINYINT(1) NOT NULL DEFAULT 0,
-						uses INTEGER NOT NULL DEFAULT 0,
+						uses TINYTEXT NOT NULL,
 						PRIMARY KEY (name(32)),
 						INDEX index_type (type(3), subtype(3)),
 						INDEX index_subtype (subtype(3)),
@@ -45,5 +45,36 @@ function CreateLegendsTables($db)
 	$result = $db->query($query);
 	if ($result === false) return "Failed to create the cards table!";
 	
+	$query = "CREATE TABLE IF NOT EXISTS logInfo (
+						id TINYTEXT NOT NULL,
+						value TINYTEXT NOT NULL,
+						PRIMARY KEY (id(16))
+					);";
+	
+	$result = $db->query($query);
+	if ($result === false) return "Failed to create the logInfo table!";
+	
 	return true;
+}
+
+
+function UpdateLegendsPageViews($id, $db = null)
+{
+	global $uespLegendsWriteDBHost, $uespLegendsWriteUser, $uespLegendsWritePW, $uespLegendsDatabase;
+
+	$deleteDb = false;
+
+	if ($db == null)
+	{
+		$deleteDb = true;
+		$db = new mysqli($uespLegendsWriteDBHost, $uespLegendsWriteUser, $uespLegendsWritePW, $uespLegendsDatabase);
+		if ($db->connect_error) return false;
+	}
+
+	$query = "UPDATE logInfo SET value=value+1 WHERE id='$id';";
+	$result = $db->query($query);
+
+	if ($deleteDb) $db->close();
+
+	return $result !== false;
 }

@@ -1,0 +1,21 @@
+.esolegCardDataTable {
+	border: 1px #aaa solid;
+    border-collapse: collapse;
+    background: #FDF5E6;
+}
+
+.esolegCardDataTable th {
+	background: #f5deb3;	
+}
+
+.esolegCardDataTable th,
+.esolegCardDataTable tr,
+.esolegCardDataTable td
+ {
+    border: 1px #aaa solid;
+    padding: 0.2em;
+}
+
+.esolegCardDataTable tr:hover {
+	background: #ccc;
+}

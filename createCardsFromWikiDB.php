@@ -5,10 +5,10 @@ if (php_sapi_name() != "cli") die("Can only be run from command line!");
 print("\tImporting new Legends card data from wiki pages...\n");
 
 	/* Database users, passwords and other secrets */
-require("/home/uesp/secrets/legends.secrets");
-require("/home/uesp/secrets/wiki.secrets");
+require_once("/home/uesp/secrets/legends.secrets");
+require_once("/home/uesp/secrets/wiki.secrets");
 
-require("legendsCommon.php");
+require_once("legendsCommon.php");
 
 $wikiDb = new mysqli($UESP_SERVER_DB2, $uespWikiUser, $uespWikiPW, $uespWikiDB);
 if ($wikiDb->connect_error) exit("Could not connect to wiki database!");
@@ -165,23 +165,25 @@ foreach ($cards as $name => $card)
 	$text = $card['ability'];			if ($text == null) $text = "";
 	$type = $card['type'];				if ($type == null) $type = "";
 	$subtype = $card['subtype'];		if ($subtype == null) $subtype = "";
-	$image = $card['image'];				if ($image == null) $image = "";
+	$image = $card['image'];			if ($image == null) $image = "";
 	$rarity = $card['rarity'];			if ($rarity == null) $rarity = "";
 	$attribute = $card['attribute'];	if ($attribute == null) $attribute = "";
 	$class = $card['class'];			if ($class == null) $class = "";
 	$set = $card['availability'];		if ($set == null) $set = "";
-		
-	$magicka = $card['cost'];			if ($magicka == null) $magicka = 0;
-	$power = $card['power'];			if ($power == null) $power = 0;
-	$health = $card['health'];			if ($health == null) $health = 0;
-	$obtainable = $card['obtainable'];	if ($obtainable == null) $obtainable = 0;
 	$uses = $card['uses'];				if ($uses == null) $uses = 0;
+	$obtainable = $card['obtainable'];	if ($obtainable == null) $obtainable = "No";
+		
+	$magicka = intval($card['cost']);
+	$power = intval($card['power']);
+	$health = intval($card['health']);
 	
+	//print ("$name: $text\n");
 	$text = preg_replace("#'''(.*?)'''#", "$1", $text);
 	$text = preg_replace("#\[\[(?:Legends|LG):.*?\|(.*?)\]\]#", "$1", $text);
 	$text = preg_replace("#<br>|<br/>|</br>#", "\n", $text);
 	$text = preg_replace("#<span .*?</span>#", "", $text);
-	//print ("$text\n");
+	$text = str_replace('<div style="clear:left"></div>', "\n", $text);
+	//print ("$name: $text\n");
 	
 	$image = preg_replace("# #", "_", $image);
 	$image = preg_replace("#&\#39;#", "'", $image);
@@ -190,6 +192,11 @@ foreach ($cards as $name => $card)
 	$image = "/" . $hash . $image;
 	//print($image."\n");
 	
+	if ($obtainable == "Yes")
+		$obtainable = 1;
+	else
+		$obtainable = 0;
+		
 	$filename = "/home/uesp/www/w/images" . $image;
 	if (!file_exists($filename)) print("\t\tWarning: $name image file '$image' doesn't exist!\n");
 	
@@ -202,6 +209,7 @@ foreach ($cards as $name => $card)
 	$attribute = $db->real_escape_string($attribute);
 	$set = $db->real_escape_string($set);
 	$class = $db->real_escape_string($class);
+	$uses = $db->real_escape_string($uses);
 	
 	$query = "SELECT * FROM cards WHERE name='$name';";
 	$result = $db->query($query);

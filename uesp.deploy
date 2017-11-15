@@ -11,14 +11,6 @@ ignore = *.sh
 ignore = *.sql
 ignore = cron*
 
-dest = content3.uesp.net:/home/uesp/www/legends/
-# dest = files1.uesp.net:/home/uesp/esolog.static/
-# dest = content1.uesp.net:/home/uesp/esolog.static/
-# dest = content2.uesp.net:/home/uesp/esolog.static/
-# dest = content3.uesp.net:/home/uesp/esolog.static/
-
-# chown_dest = apache {dest}log/
-# chown_dest = apache {dest}log/upload
-# chmod_dest = g+rw -R {dest}
-
-# manualcopy = all: {source}cron/uesp-esolog-parse {servername}:/etc/cron.hourly/uesp-esolog-parse
+dest = content1.uesp.net:/home/uesp/www/w/extensions/UespLegendsCards/
+dest = content2.uesp.net:/home/uesp/www/w/extensions/UespLegendsCards/
+dest = content3.uesp.net:/home/uesp/www/w/extensions/UespLegendsCards/
