@@ -206,7 +206,7 @@ class CUespLegendsCardDataViewer
 		$image = preg_replace("#.+?/.+?/(.*)#", "$1", $card['image']);
 		$imageName = $this->Escape($image);
 		$imageLink = "<a href='/wiki/File:$image'>$imageName</a>";
-		$imageSrc = "//content3.uesp.net/w/extensions/UespLegendsCards/cardimages/$name.png";
+		$imageSrc = "//en.uesp.net/w/extensions/UespLegendsCards/cardimages/$name.png";
 				
 		if ($obtainable == 1)
 			$obtainable = "Yes";
