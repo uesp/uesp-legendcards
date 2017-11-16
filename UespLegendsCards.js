@@ -18,6 +18,8 @@ function CreateLegendsCardPopup()
 
 function OnLegendsCardImageLoad(e)
 {
+	if (!LegendsCardPopup_Visible || LegendsCardPopup_LastElement == null) return;
+	
 	LegendsCardPopup.show();
 	AdjustLegendsCardPopupPosition(LegendsCardPopup, LegendsCardPopup_LastElement);
 }
@@ -38,7 +40,8 @@ function ShowLegendsCardPopup(parent, cardName)
 	//var imageSrc = "//legends.uesp.net/cardimage/" + encodeURIComponent(cardName) + ".png";
 	var imageSrc = "//en.uesp.net/w/extensions/UespLegendsCards/cardimages/" + cardName + ".png";
 	
-	LegendsCardPopup_Image.attr("src", imageSrc);
+	LegendsCardPopup_Visible = true;
+	LegendsCardPopup_Image.attr("src", imageSrc);	
 }
 
 
