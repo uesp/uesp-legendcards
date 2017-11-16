@@ -69,7 +69,7 @@ class CUespLegendsCardDataViewer
 		}
 		else
 		{
-			$query = "SELECT * FROM cards;";
+			$query = "SELECT * FROM cards ORDER BY name;";
 		}
 		
 		return $query;
@@ -100,6 +100,19 @@ class CUespLegendsCardDataViewer
 	public function Escape($html)
 	{
 		return htmlspecialchars($html);	
+	}
+	
+	
+	public function GetBreadcrumbTrail()
+	{
+		$output = "";
+		
+		if ($this->inputCardName != "")
+		{
+			$output = "<a href='/wiki/Special:LegendsCardData' class='eslegBreadcrumb'>&laquo; View All Cards</a>";
+		}
+		
+		return $output;	
 	}
 	
 	
@@ -251,7 +264,7 @@ class CUespLegendsCardDataViewer
 		$output = "";
 		
 		$cardCount = count($this->cards);
-		$output .= "Showing data for $cardCount matching cards.";
+		$output .= "Showing data for $cardCount matching cards.<p/>";
 		
 		$output .= "<table class='eslegCardDataTable'>";
 		$output .= "<tr>";
@@ -288,11 +301,12 @@ class CUespLegendsCardDataViewer
 		if (!$this->LoadCardData()) return "Error: Failed to load the Legends card data!";
 		
 		$output = "";
+		$output .= $this->GetBreadcrumbTrail();
 		
 		if ($this->inputCardName != "")
-			$output = $this->GetCardDetailsOutput();
+			$output .= $this->GetCardDetailsOutput();
 		else
-			$output = $this->GetCardTableOutput();
+			$output .= $this->GetCardTableOutput();
 		
 		return $output;
 	}
