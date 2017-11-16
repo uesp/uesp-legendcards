@@ -31,6 +31,7 @@ $wgExtensionMessagesFiles['LegendsCardDataAlias'] = __DIR__ . '/UespLegendsCards
 $wgSpecialPages['LegendsCardData'] = 'SpecialLegendsCardData';
 
 $wgHooks['BeforePageDisplay'][] = 'uespLegendsCardData_beforePageDisplay';
+$wgHooks['ParserFirstCallInit'][] = 'uespLegendsCardData_ParserInit';
 
 $wgGroupPermissions['*']['legendscarddata_edit'] = false;
 $wgGroupPermissions['*']['legendscarddata_add'] = false;
@@ -43,12 +44,42 @@ function uespLegendsCardData_beforePageDisplay(&$out)
 	global $wgScriptPath;
 	
 	$out->addHeadItem("uesp-legendscards-css", "<link rel='stylesheet' href='//content3.uesp.net/w/extensions/UespLegendsCards/UespLegendsCards.css?version=15Nov2017' />");
-	$out->addHeadItem("uesp-legendscards-js", "<script src='//content3.uesp.net/w/extensions/UespLegendsCard/UespLegendsCards?version=15Nov2017'></script>");
+	$out->addHeadItem("uesp-legendscards-js", "<script src='//content3.uesp.net/w/extensions/UespLegendsCards/UespLegendsCards.js?version=15Nov2017'></script>");
 	
 	return true;
 }
 
 
+function uespLegendsCardData_ParserInit(Parser $parser)
+{
+	$parser->setHook('legendscard', 'uespRenderLegendsCard');
+	return true;
+}
 
 
+function uespRenderLegendsCard($input, array $args, Parser $parser, PPFrame $frame)
+{
+	$output = "";
+	$cardName = "";
+	
+	foreach ($args as $name => $value)
+	{
+		$name = strtolower($name);
 
+		if ($name == "card" || $name == "name")
+			$cardName = $value;
+
+	}
+
+	$cardURL = "/wiki/Special:LegendsCardData?";
+	
+	if ($cardName != "") 
+	{
+		$cardURL .= "&card=" . urlencode($cardName);
+		$attributes .= "card=\"" . htmlspecialchars($cardName) . "\" ";
+	}
+	
+	$output = "<a href='$cardURL' class='legendsCardLink' $attributes>$input</a>";
+
+	return $output;
+}
