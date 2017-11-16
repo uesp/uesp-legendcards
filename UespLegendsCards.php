@@ -43,8 +43,8 @@ function uespLegendsCardData_beforePageDisplay(&$out)
 {
 	global $wgScriptPath;
 	
-	$out->addHeadItem("uesp-legendscards-css", "<link rel='stylesheet' href='//content3.uesp.net/w/extensions/UespLegendsCards/UespLegendsCards.css?version=15Nov2017' />");
-	$out->addHeadItem("uesp-legendscards-js", "<script src='//content3.uesp.net/w/extensions/UespLegendsCards/UespLegendsCards.js?version=15Nov2017'></script>");
+	$out->addHeadItem("uesp-legendscards-css", "<link rel='stylesheet' href='//en.uesp.net/w/extensions/UespLegendsCards/UespLegendsCards.css?version=15Nov2017' />");
+	$out->addHeadItem("uesp-legendscards-js", "<script src='//en.uesp.net/w/extensions/UespLegendsCards/UespLegendsCards.js?version=15Nov2017'></script>");
 	
 	return true;
 }

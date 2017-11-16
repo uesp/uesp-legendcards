@@ -36,7 +36,7 @@ function ShowLegendsCardPopup(parent, cardName)
 	LegendsCardPopup_LastElement = parent;
 	
 	//var imageSrc = "//legends.uesp.net/cardimage/" + encodeURIComponent(cardName) + ".png";
-	var imageSrc = "//content3.uesp.net/w/extensions/UespLegendsCards/cardimages/" + cardName + ".png";
+	var imageSrc = "//en.uesp.net/w/extensions/UespLegendsCards/cardimages/" + cardName + ".png";
 	
 	LegendsCardPopup_Image.attr("src", imageSrc);
 }
