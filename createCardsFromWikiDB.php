@@ -189,7 +189,8 @@ foreach ($cards as $name => $card)
 	$image = preg_replace("#&\#39;#", "'", $image);
 	$hash = getImageHashPath($image);
 	//$image = preg_replace("#'#", "%27", $image);
-	$image = "/" . $hash . $image;
+	
+	if ($image != "") $image = "/" . $hash . $image;
 	//print($image."\n");
 	
 	if ($obtainable == "Yes")

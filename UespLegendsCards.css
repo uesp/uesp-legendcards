@@ -1,21 +1,57 @@
-.esolegCardDataTable {
+.eslegCardDataTable {
 	border: 1px #aaa solid;
     border-collapse: collapse;
     background: #FDF5E6;
 }
 
-.esolegCardDataTable th {
+.eslegCardDataTable th {
 	background: #f5deb3;	
 }
 
-.esolegCardDataTable th,
-.esolegCardDataTable tr,
-.esolegCardDataTable td
+.eslegCardDataTable th,
+.eslegCardDataTable tr,
+.eslegCardDataTable td
  {
     border: 1px #aaa solid;
     padding: 0.2em;
 }
 
-.esolegCardDataTable tr:hover {
+.eslegCardDataTable tr:hover {
 	background: #ccc;
+}
+
+.eslegCardPopup {
+	position: absolute;
+	z-index: 50;
+}
+
+
+.eslegCardPopup img {
+	width: 200px;
+	height: 324px;
+}
+
+.eslegCardDetailsTable {
+	border: 1px #aaa solid;
+    border-collapse: collapse;
+    background: #FDF5E6;
+}
+
+.eslegCardDetailsTable th {
+	background: #f5deb3;	
+}
+
+.eslegCardDetailsTable th,
+.eslegCardDetailsTable tr,
+.eslegCardDetailsTable td
+ {
+    border: 1px #aaa solid;
+    padding: 0.2em;
+}
+
+.eslegCardDetailsTable tr:hover {
+}
+
+.eslegCardDetailsImage {
+	float: right;
 }
