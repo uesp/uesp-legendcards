@@ -55,3 +55,10 @@
 .eslegCardDetailsImage {
 	float: right;
 }
+
+.eslegBreadcrumb {
+	font-size: 0.95em;
+	display: block;
+	position: absolute;
+    top: 8px;
+}
