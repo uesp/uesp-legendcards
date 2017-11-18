@@ -2,6 +2,7 @@ var LegendsCardPopup = null;
 var LegendsCardPopup_Image = null;
 var LegendsCardPopup_LastElement = null;
 var LegendsCardPopup_Visible = false;
+var LegendsCardPopup_Error = false;
 //var EsoItemLinkPopup_CacheId = "";
 //var EsoItemLinkPopup_Cache = { };
 
@@ -18,6 +19,8 @@ function CreateLegendsCardPopup()
 
 function OnLegendsCardImageLoad(e)
 {
+	LegendsCardPopup_Error = false;
+	
 	if (!LegendsCardPopup_Visible || LegendsCardPopup_LastElement == null) return;
 	
 	LegendsCardPopup.show();
@@ -27,7 +30,19 @@ function OnLegendsCardImageLoad(e)
 
 function OnLegendsCardImageError(e)
 {
-	LegendsCardPopup.hide();
+	if (LegendsCardPopup_Error)
+	{
+		LegendsCardPopup_Visible = false;
+		LegendsCardPopup_Error = false;
+		LegendsCardPopup_LastElement = null;
+		LegendsCardPopup.hide();
+		return;
+	}
+	
+	if (!LegendsCardPopup_Visible || LegendsCardPopup_LastElement == null) return;
+	
+	LegendsCardPopup_Error = true;
+	LegendsCardPopup_Image.attr("src", "//legends.uesp.net/unknown.png");
 }
 
 
@@ -38,9 +53,11 @@ function ShowLegendsCardPopup(parent, cardName)
 	LegendsCardPopup_LastElement = parent;
 	
 	//var imageSrc = "//legends.uesp.net/cardimage/" + encodeURIComponent(cardName) + ".png";
-	var imageSrc = "//en.uesp.net/w/extensions/UespLegendsCards/cardimages/" + cardName + ".png";
+	//var imageSrc = "//en.uesp.net/w/extensions/UespLegendsCards/cardimages/" + cardName + ".png";
+	var imageSrc = "//legends.uesp.net/" + cardName + ".png";
 	
 	LegendsCardPopup_Visible = true;
+	LegendsCardPopup_Error = false;
 	LegendsCardPopup_Image.attr("src", imageSrc);	
 }
 
@@ -96,6 +113,7 @@ function AdjustLegendsCardPopupPosition(tooltip, parent)
 function HideLegendsCardPopup()
 {
 	LegendsCardPopup_Visible = false;
+	LegendsCardPopup_Error = false;
 	if (LegendsCardPopup == null) return;
 	LegendsCardPopup.hide();
 }
@@ -105,6 +123,7 @@ function OnLegendsCardLinkEnter()
 {
 	var $this = $(this);
 	LegendsCardPopup_LastElement = $this;
+	LegendsCardPopup_Error = false;
 	
 	ShowLegendsCardPopup(LegendsCardPopup_LastElement, $this.attr('card'));
 }
@@ -113,6 +132,7 @@ function OnLegendsCardLinkEnter()
 function OnLegendsCardLinkLeave()
 {
 	LegendsCardPopup_LastElement = null;
+	LegendsCardPopup_Error = false;
 	HideLegendsCardPopup();
 }
 
