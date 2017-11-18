@@ -32,13 +32,8 @@
 }
 
 .eslegCardDetailsTable {
-	border: 1px #aaa solid;
+	
     border-collapse: collapse;
-    background: #FDF5E6;
-}
-
-.eslegCardDetailsTable th {
-	background: #f5deb3;	
 }
 
 .eslegCardDetailsTable th,
@@ -47,6 +42,15 @@
  {
     border: 1px #aaa solid;
     padding: 0.2em;
+}
+
+.eslegCardDetailsTable td {
+	background: #FDF5E6;
+	border: 1px #aaa solid;
+}
+
+.eslegCardDetailsTable th {
+	background: #f5deb3;	
 }
 
 .eslegCardDetailsTable tr:hover {
@@ -61,4 +65,54 @@
 	display: block;
 	position: absolute;
     top: 8px;
+}
+
+#eslegCardInputName,
+#eslegCardInputTraining1,
+#eslegCardInputTraining2,
+#eslegCardInputImage {
+	width: 250px;	
+}
+
+#eslegCardInputType,
+#eslegCardInputSubtype,
+#eslegCardInputAttribute1,
+#eslegCardInputAttribute2,
+#eslegCardInputClass,
+#eslegCardInputRarity,
+#eslegCardInputSet {
+	width: 150px;
+}
+
+#eslegCardInputMagicka,
+#eslegCardInputPower,
+#eslegCardInputTrainingLevel1,
+#eslegCardInputTrainingLevel2,
+#eslegCardInputHealth {
+	width: 50px;
+}
+
+#eslegCardInputUses {
+	width: 150px;
+}
+
+#eslegCardInputText {
+	width: 600px;
+	height: 100px;
+}
+
+.eslegCardRowSave {
+	text-align: right;
+	border: none !important;
+	background: none !important;
+}
+
+.eslegCardDetailsEditRow {
+	text-align: right;
+	border: none !important;
+	background: none !important;
+}
+
+.eslegCardCreate {
+	float: right;
 }

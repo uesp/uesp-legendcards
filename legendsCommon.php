@@ -1,15 +1,10 @@
-<?php 
+<?php
 
-"CREATE TABLE IF NOT EXISTS logEntry (
-						id BIGINT NOT NULL AUTO_INCREMENT,
-						gameTime INTEGER NOT NULL,
-						timeStamp BIGINT NOT NULL,
-						entryHash BIGINT NOT NULL,
-						userName TINYTEXT NOT NULL,
-						ipAddress TINYTEXT NOT NULL,
-						PRIMARY KEY (id),
-						INDEX unique_entry (gameTime, timeStamp, entryHash)
-					);";
+
+$UESP_LEGENDS_WIKIIMAGEPATH = "/home/uesp/www/w/images/";
+$UESP_LEGENDS_OUTPUT_PATH = "./cardimages/";
+$UESP_LEGENDS_CARD_WIDTH = 200;
+$UESP_LEGENDS_CARD_HEIGHT = 324;
 
 
 function CreateLegendsTables($db)
@@ -29,7 +24,10 @@ function CreateLegendsTables($db)
 						`set` TINYTEXT NOT NULL,
 						`class` TINYTEXT NOT NULL,
 						obtainable TINYINT(1) NOT NULL DEFAULT 0,
-						training TINYINT(1) NOT NULL DEFAULT 0,
+						training1 TINYTEXT NOT NULL,
+						trainingLevel1 TINYINT NOT NULL,
+						training2 TINYTEXT NOT NULL,
+						trainingLevel2 TINYINT NOT NULL,
 						uses TINYTEXT NOT NULL,
 						PRIMARY KEY (name(32)),
 						INDEX index_type (type(3), subtype(3)),
@@ -77,4 +75,75 @@ function UpdateLegendsPageViews($id, $db = null)
 	if ($deleteDb) $db->close();
 
 	return $result !== false;
+}
+
+
+/* This should be the same hash used in MediaWiki for image directories */
+function GetLegendsImagePathHash($name)
+{
+	$name = preg_replace("# #", "_", $name);
+	$name = preg_replace("#&\#39;#", "'", $name);
+	
+	$levels = 2;	/* 2 for hashed upload directory, 0 for non-hashed */
+
+	$hash = md5( $name );
+	$path = '';
+	for ( $i = 1; $i <= $levels; $i++ ) {
+		$path .= substr( $hash, 0, $i ) . '/';
+	}
+
+	return $path;
+}
+
+
+function CreateLegendsPopupImage($cardName, $imageBaseName, $outputPath = null, $print = false)
+{
+	global $UESP_LEGENDS_WIKIIMAGEPATH, $UESP_LEGENDS_OUTPUT_PATH, $UESP_LEGENDS_CARD_WIDTH, $UESP_LEGENDS_CARD_HEIGHT;
+	
+	if ($outputPath === null) $outputPath = $UESP_LEGENDS_OUTPUT_PATH;
+	
+	$width = $UESP_LEGENDS_CARD_WIDTH;
+	$height = $UESP_LEGENDS_CARD_HEIGHT;
+	
+	$imageFilename = $UESP_LEGENDS_WIKIIMAGEPATH . $imageBaseName;
+	$outputFilename = $outputPath . $cardName . ".png";
+	
+	if ($imageBaseName == "")
+	{
+		if ($print) print("\t$cardName: Has no image file set!\n");
+		return false;
+	}
+		
+	if (!file_exists($imageFilename))
+	{
+		if ($print) print("\t$cardName: Image file '$imageFilename' not found!\n");
+		return false;;
+	}
+	
+	$image = imagecreatefrompng($imageFilename);
+	$resizeImage = imagecreatetruecolor($width, $height);
+	
+	if ($image == null || $resizeImage == null)
+	{
+		if ($print) print("\t$cardName: Failed to create PNG image from file '$imageFilename'!\n");
+		return false;;
+	}
+	
+	imagealphablending($resizeImage, false);
+	imagesavealpha($resizeImage, true);
+	$transparent = imagecolorallocatealpha($resizeImage, 255, 255, 255, 127);
+	imagefilledrectangle($resizeImage, 0, 0, $width, $height, $transparent);
+	
+	imagecopyresampled($resizeImage, $image, 0, 0, 0, 0, $width, $height, imagesx($image), imagesy($image));
+	
+	$fileResult = imagepng($resizeImage, $outputFilename);
+	
+	if (!$fileResult)
+	{
+		if ($print) print("\t$cardName: Failed to save resized PNG image to file '$outputFilename'!\n");
+		return false;;
+	}
+	
+	if ($print) print("\t$cardName: Saved image to '$outputFilename'!\n");
+	return true;
 }

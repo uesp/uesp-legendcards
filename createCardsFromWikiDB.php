@@ -145,20 +145,6 @@ $insertCount = 0;
 $updateCount = 0;
 
 
-		/* This should be the same hash used in MediaWiki */
-function getImageHashPath($name) 
-{
-	$levels = 2;	/* 2 for hashed upload directory, 0 for non-hashed */
-	
-	$hash = md5( $name );
-	$path = '';
-	for ( $i = 1; $i <= $levels; $i++ ) {
-		$path .= substr( $hash, 0, $i ) . '/';
-	}
-
-	return $path;
-}
-
 
 foreach ($cards as $name => $card)
 {
@@ -187,7 +173,7 @@ foreach ($cards as $name => $card)
 	
 	$image = preg_replace("# #", "_", $image);
 	$image = preg_replace("#&\#39;#", "'", $image);
-	$hash = getImageHashPath($image);
+	$hash = GetLegendsImagePathHash($image);
 	//$image = preg_replace("#'#", "%27", $image);
 	
 	if ($image != "") $image = "/" . $hash . $image;
