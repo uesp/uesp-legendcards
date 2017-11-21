@@ -37,6 +37,8 @@ $wgGroupPermissions['*']['legendscarddata_edit'] = false;
 $wgGroupPermissions['*']['legendscarddata_add'] = false;
 $wgGroupPermissions['sysop']['legendscarddata_edit'] = true;
 $wgGroupPermissions['sysop']['legendscarddata_add'] = true;
+$wgGroupPermissions['LegendsEditor']['legendscarddata_edit'] = true;
+$wgGroupPermissions['LegendsEditor']['legendscarddata_add'] = true;
 
 
 function uespLegendsCardData_beforePageDisplay(&$out) 
@@ -61,25 +63,49 @@ function uespRenderLegendsCard($input, array $args, Parser $parser, PPFrame $fra
 {
 	$output = "";
 	$cardName = "";
+	$useCardDataLink = false;
 	
 	foreach ($args as $name => $value)
 	{
 		$name = strtolower($name);
 
 		if ($name == "card" || $name == "name")
+		{
 			$cardName = $value;
+		}
+		else if ($name == "usedatalink")
+		{
+			$useCardDataLink = intval($value) > 0;
+		}
 
 	}
-
-	$cardURL = "/wiki/Special:LegendsCardData?";
 	
-	if ($cardName != "") 
+	$output = $parser->recursiveTagParse($input, $frame);
+	$outputCardName = $parser->recursiveTagParse($cardName, $frame); 
+
+	if ($useCardDataLink)
+		$cardURL = "/wiki/Special:LegendsCardData?";
+	else
+		$cardURL = "/wiki/Legends:";		
+	
+	if ($outputCardName != "")
 	{
-		$cardURL .= "&card=" . urlencode($cardName);
-		$attributes .= "card=\"" . htmlspecialchars($cardName) . "\" ";
+		if ($useCardDataLink)
+			$cardURL .= "&card=" . urlencode($outputCardName);
+		else
+			$cardURL .= $outputCardName;
+		
+		$attributes .= "card=\"" . htmlspecialchars($outputCardName) . "\" ";
 	}
-	
-	$output = "<a href='$cardURL' class='legendsCardLink' $attributes>$input</a>";
+	else
+	{
+		if ($useCardDataLink)
+			$cardURL .= "";
+		else
+			$cardURL .= "Legends";
+	}
+		
+	$output = "<a href='$cardURL' class='legendsCardLink' $attributes>$output</a>";
 
 	return $output;
 }
