@@ -105,7 +105,7 @@ function uespRenderLegendsCard($input, array $args, Parser $parser, PPFrame $fra
 			$cardURL .= "Legends";
 	}
 		
-	$output = "<a href='$cardURL' class='legendsCardLink' $attributes>$output</a>";
+	$output = "<a href=\"$cardURL\" class='legendsCardLink' $attributes>$output</a>";
 
 	return $output;
 }
