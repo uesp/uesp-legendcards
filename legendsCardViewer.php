@@ -456,7 +456,7 @@ class CUespLegendsCardDataViewer
 		$output .= "<tr><th>Training 2</th><td><input type='text' name='training2' value='$training2' id='eslegCardInputTraining2'> @ Level <input type='text' name='trainingLevel2' value='$trainingLevel2' id='eslegCardInputTrainingLevel2'></td></tr>";
 		$output .= "<tr><th>Uses</th><td><input type='text' value='$uses' name='uses' id='eslegCardInputUses' maxlength='100'></td></tr>";
 		$output .= "<tr><th>Text</th><td><textarea name='text' id='eslegCardInputText'>$text</textarea></td></tr>";
-		$output .= "<tr><th>Wiki Image</th><td><input type='text' value='$imageName' name='image' id='eslegCardInputImage' maxlength='100'> <small>This will not update the popup image!</small></td></tr>";
+		$output .= "<tr><th>Wiki Image</th><td><input type='text' value='$imageName' name='image' id='eslegCardInputImage' maxlength='100'> </td></tr>";
 		
 		$output .= "<tr class='eslegCardRowSave'><td colspan='2' class='eslegCardRowSave'><input type='submit' value='Save'></td></tr>";
 		$output .= "</table>";
