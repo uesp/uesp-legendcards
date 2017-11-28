@@ -396,7 +396,7 @@ class CUespLegendsCardDataViewer
 		$image = preg_replace("#.+?/.+?/(.*)#", "$1", $card['image']);
 		$imageName = $this->Escape($image);
 		$imageLink = "<a href='/wiki/File:$image'>$imageName</a>";
-		$imageSrc = "//en.uesp.net/w/extensions/UespLegendsCards/cardimages/$name.png";
+		$imageSrc = "//legends.uesp.net/$name.png";
 		
 		if ($image == "")
 		{
@@ -505,7 +505,7 @@ class CUespLegendsCardDataViewer
 		$image = preg_replace("#.+?/.+?/(.*)#", "$1", $card['image']);
 		$imageName = $this->Escape($image);
 		$imageLink = "<a href='/wiki/File:$image'>$imageName</a>";
-		$imageSrc = "//en.uesp.net/w/extensions/UespLegendsCards/cardimages/$name.png";
+		$imageSrc = "//legends.uesp.net/$name.png";
 		
 		$encodeName = urlencode($card['name']);
 		$wikiLink = "<a href=\"/wiki/Legends:$name\">Legends:$name</a>";
@@ -619,6 +619,7 @@ class CUespLegendsCardDataViewer
 		
 		$image = "";
 		$imageBase = $this->inputCardData['image'];
+		$imageBase = preg_replace("# #", "_", $imageBase);
 		$imageHash = GetLegendsImagePathHash($imageBase);
 		if ($imageBase != "") $image = "/" . $imageHash . $imageBase;
 		$image = $this->db->real_escape_string($image);
