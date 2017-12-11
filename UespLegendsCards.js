@@ -137,6 +137,30 @@ function OnLegendsCardLinkLeave()
 }
 
 
+function OnLegendsCardFilterClick(e)
+{
+	var isVisible = !$("#eslegCardFilterContent").is(":visible");
+	
+	$("#eslegCardFilterContent").slideToggle();
+	
+	if (isVisible)
+		$("#eslegCardFilterArrow").html("&#x25B2;");
+	else
+		$("#eslegCardFilterArrow").html("&#x25BC");
+	
+}
+
+
+function OnLegendsCardFormReset()
+{
+	$('.eslegCardFilterInput').val('');
+	$('.eslegCardFilterInputShort').val('');
+	$('.eslegCardFilterList').val('Any');
+}
+
+
 $( document ).ready(function() {
 	$('.legendsCardLink').hover(OnLegendsCardLinkEnter, OnLegendsCardLinkLeave);
+	$('.eslegCardFilterTitle').click(OnLegendsCardFilterClick);
 });
+

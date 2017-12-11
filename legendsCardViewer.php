@@ -16,8 +16,8 @@ class CUespLegendsCardDataViewer
 	static $LEGENDS_TYPES = array("Action", "Creature", "Item", "Support");
 	static $LEGENDS_SUBTYPES = array("Argonian", "Ash Creature", "Beast", "Breton", "Centaur", "Chaurus", "Daedra", "Dark Elf", "Defense", 
 					"Dragon", "Dreugh", "Dwemer", "Fabricant", "Factotum", "Falmer", "Fish", "Gargoyle", "Giant", "Goblin", "Harpy", "High Elf",
-					"Imp", "Imperial", "Khajiit", "Kwama", "Lurcher", "Mammoth", "Mantikora","Minotaur", "Mudcrab", "Mummy", "Nereid", "Nord",
-					"Ogre", "Orc", "Pastry", "Reachman", "Redguard", "Reptile", "Skeleton", "Spider", "Spirit", "Spriggan", "Troll", "Undead", 
+					"Imp", "Imperfect", "Imperial", "Khajiit", "Kwama", "Lurcher", "Mammoth", "Mantikora","Minotaur", "Mudcrab", "Mummy", "Nereid", "Nord",
+					"Ogre", "Orc", "Pastry", "Reachman", "Redguard", "Reptile", "Skeever", "Skeleton", "Spider", "Spirit", "Spriggan", "Troll", "Undead", 
 					"Vampire", "Wamasu", "Werewolf", "Wolf", "Wood Elf", "Wraith" );
 	static $LEGENDS_ATTRIBUTES = array("Agility", "Endurance", "Intelligence", "Neutral", "Strength", "Willpower");
 	static $LEGENDS_RARITIES = array("Common", "Rare", "Epic", "Legendary");
@@ -74,7 +74,15 @@ class CUespLegendsCardDataViewer
 			'trainingLevel1' => 0,
 			'training2' => '',
 			'trainingLevel2' => 0,
+			'filter' => 0,
+			'minMagicka' => '',
+			'maxMagicka' => '',
+			'minPower' => '',
+			'maxPower' => '',
+			'minHealth' => '',
+			'maxHealth' => '',
 		);
+	public $totalCardCount = 0;
 
 
 	public function __construct ()
@@ -101,6 +109,7 @@ class CUespLegendsCardDataViewer
 		if ($this->inputParams['race'] !== null) $this->inputCardData['subtype'] = $this->inputParams['subtype'];
 		if ($this->inputParams['class'] !== null) $this->inputCardData['class'] = $this->inputParams['class'];
 		if ($this->inputParams['set'] !== null) $this->inputCardData['set'] = $this->inputParams['set'];
+		if ($this->inputParams['attribute'] !== null) $this->inputCardData['attribute'] = $this->inputParams['attribute'];
 		if ($this->inputParams['attribute1'] !== null) $this->inputCardData['attribute'] = $this->inputParams['attribute1'];
 		if ($this->inputParams['attribute2'] !== null) $this->inputCardData['attribute2'] = $this->inputParams['attribute2'];
 		if ($this->inputParams['rarity'] !== null) $this->inputCardData['rarity'] = $this->inputParams['rarity'];
@@ -115,12 +124,24 @@ class CUespLegendsCardDataViewer
 		if ($this->inputParams['uses'] !== null) $this->inputCardData['uses'] = $this->inputParams['uses'];
 		if ($this->inputParams['text'] !== null) $this->inputCardData['text'] = $this->inputParams['text'];
 		if ($this->inputParams['image'] !== null) $this->inputCardData['image'] = $this->inputParams['image'];		
+		if ($this->inputParams['filter'] !== null) $this->inputCardData['filter'] = intval($this->inputParams['filter']);
+		
+		if ($this->inputParams['minMagicka'] !== null) $this->inputCardData['minMagicka'] = $this->inputParams['minMagicka'];
+		if ($this->inputParams['maxMagicka'] !== null) $this->inputCardData['maxMagicka'] = $this->inputParams['maxMagicka'];
+		if ($this->inputParams['minPower'] !== null) $this->inputCardData['minPower'] = $this->inputParams['minPower'];
+		if ($this->inputParams['maxPower'] !== null) $this->inputCardData['maxPower'] = $this->inputParams['maxPower'];
+		if ($this->inputParams['minHealth'] !== null) $this->inputCardData['minHealth'] = $this->inputParams['minHealth'];
+		if ($this->inputParams['maxHealth'] !== null) $this->inputCardData['maxHealth'] = $this->inputParams['maxHealth'];
 	}
 	
 
 	public function ReportError($errorMsg)
 	{
 		error_log($errorMsg);
+		
+		//print($errorMsg);
+		//if ($this->db) print($this->db->error);
+		
 		return false;
 	}
 
@@ -210,6 +231,110 @@ class CUespLegendsCardDataViewer
 	}
 	
 	
+	public function GetTotalCards()
+	{
+		$this->totalCardCount = 0;
+		
+		$result = $this->db->query("SELECT count(*) as count FROM cards;");
+		if ($result === false) return 0;
+		
+		$row = $result->fetch_assoc();
+		$this->totalCardCount = intval($row['count']); 
+		
+		return $this->totalCardCount; 
+	}
+	
+	
+	public function GetFilterCardDataQuery()
+	{
+		$query = "SELECT * FROM cards ";
+		$where = array();
+		
+		if ($this->inputCardData['text'] != "")
+		{
+			$safeValue = $this->db->real_escape_string($this->inputCardData['text']);
+			$where[] = "MATCH(name, text) AGAINST('$safeValue' IN BOOLEAN MODE)";
+		}
+		
+		if ($this->inputCardData['attribute'] != "")
+		{
+			$safeValue = $this->db->real_escape_string($this->inputCardData['attribute']);
+			$where[] = "(attribute='$safeValue' OR attribute2='$safeValue')";
+		}
+		
+		if ($this->inputCardData['type'] != "")
+		{
+			$safeValue = $this->db->real_escape_string($this->inputCardData['type']);
+			$where[] = "type='$safeValue'";
+		}
+		
+		if ($this->inputCardData['subtype'] != "")
+		{
+			$safeValue = $this->db->real_escape_string($this->inputCardData['subtype']);
+			$where[] = "subtype='$safeValue'";
+		}
+		
+		if ($this->inputCardData['class'] != "")
+		{
+			$safeValue = $this->db->real_escape_string($this->inputCardData['class']);
+			$where[] = "`class`='$safeValue'";
+		}
+		
+		if ($this->inputCardData['set'] != "")
+		{
+			$safeValue = $this->db->real_escape_string($this->inputCardData['set']);
+			$where[] = "`set`='$safeValue'";
+		}
+		
+		if ($this->inputCardData['rarity'] != "")
+		{
+			$safeValue = $this->db->real_escape_string($this->inputCardData['rarity']);
+			$where[] = "rarity='$safeValue'";
+		}
+		
+		if ($this->inputCardData['minMagicka'] != "")
+		{
+			$safeValue = intval($this->inputCardData['minMagicka']);
+			$where[] = "magicka >= '$safeValue'";
+		}
+		
+		if ($this->inputCardData['maxMagicka'] != "")
+		{
+			$safeValue = intval($this->inputCardData['maxMagicka']);
+			$where[] = "magicka <= '$safeValue'";
+		}
+		
+		if ($this->inputCardData['minPower'] != "")
+		{
+			$safeValue = intval($this->inputCardData['minPower']);
+			$where[] = "power >= '$safeValue'";
+		}
+		
+		if ($this->inputCardData['maxPower'] != "")
+		{
+			$safeValue = intval($this->inputCardData['maxPower']);
+			$where[] = "power <= '$safeValue'";
+		}
+		
+		if ($this->inputCardData['minHealth'] != "")
+		{
+			$safeValue = intval($this->inputCardData['minHealth']);
+			$where[] = "health >= '$safeValue'";
+		}
+		
+		if ($this->inputCardData['maxHealth'] != "")
+		{
+			$safeValue = intval($this->inputCardData['maxHealth']);
+			$where[] = "health <= '$safeValue'";
+		}
+				
+		if (count($where) > 0) $query .= " WHERE " . implode( " AND ", $where);		
+		
+		$query .= " ORDER BY name;";
+		return $query;
+	}
+	
+	
 	public function GetCardDataQuery()
 	{
 		if ($this->inputCardName != "")
@@ -221,6 +346,10 @@ class CUespLegendsCardDataViewer
 		{
 			$safeName = $this->db->real_escape_string($this->inputEditCard);
 			$query = "SELECT * FROM cards WHERE name='$safeName';";
+		}
+		else if ($this->inputCardData['filter'] > 0)
+		{
+			$query = $this->GetFilterCardDataQuery();
 		}
 		else
 		{
@@ -234,6 +363,8 @@ class CUespLegendsCardDataViewer
 	public function LoadCardData()
 	{
 		if (!$this->InitDatabase()) return false;
+		
+		$this->GetTotalCards();
 		
 		$query = $this->GetCardDataQuery();
 		$result = $this->db->query($query);
@@ -418,7 +549,7 @@ class CUespLegendsCardDataViewer
 		}
 		else
 		{
-			$output .= "<input type='hidden' value='$name' name='name' id='eslegCardInputName' maxlength='100'>";
+			$output .= "<input type='hidden' value=\"$name\" name='name' id='eslegCardInputName' maxlength='100'>";
 		}
 		
 		$output .= "<img src=\"$imageSrc\" class='eslegCardDetailsImage'><p/>";
@@ -434,7 +565,7 @@ class CUespLegendsCardDataViewer
 		
 		if ($this->inputCreateCard)
 		{
-			$output .= "<tr><th>Name</th><td><input type='text' value='$name' name='name' id='eslegCardInputName' maxlength='100'> <small>Must be unique and can't be changed later.</small></td></tr>";
+			$output .= "<tr><th>Name</th><td><input type='text' value=\"$name\" name='name' id='eslegCardInputName' maxlength='100'> <small>Must be unique and can't be changed later.</small></td></tr>";
 		}
 		else
 		{
@@ -456,7 +587,7 @@ class CUespLegendsCardDataViewer
 		$output .= "<tr><th>Training 2</th><td><input type='text' name='training2' value='$training2' id='eslegCardInputTraining2'> @ Level <input type='text' name='trainingLevel2' value='$trainingLevel2' id='eslegCardInputTrainingLevel2'></td></tr>";
 		$output .= "<tr><th>Uses</th><td><input type='text' value='$uses' name='uses' id='eslegCardInputUses' maxlength='100'></td></tr>";
 		$output .= "<tr><th>Text</th><td><textarea name='text' id='eslegCardInputText'>$text</textarea></td></tr>";
-		$output .= "<tr><th>Wiki Image</th><td><input type='text' value='$imageName' name='image' id='eslegCardInputImage' maxlength='100'> </td></tr>";
+		$output .= "<tr><th>Wiki Image</th><td><input type='text' value=\"$imageName\" name='image' id='eslegCardInputImage' maxlength='100'> </td></tr>";
 		
 		$output .= "<tr class='eslegCardRowSave'><td colspan='2' class='eslegCardRowSave'><input type='submit' value='Save'></td></tr>";
 		$output .= "</table>";
@@ -504,7 +635,7 @@ class CUespLegendsCardDataViewer
 		
 		$image = preg_replace("#.+?/.+?/(.*)#", "$1", $card['image']);
 		$imageName = $this->Escape($image);
-		$imageLink = "<a href='/wiki/File:$image'>$imageName</a>";
+		$imageLink = "<a href=\"/wiki/File:$image\">$imageName</a>";
 		$imageSrc = "//legends.uesp.net/$name.png";
 		
 		$encodeName = urlencode($card['name']);
@@ -554,13 +685,18 @@ class CUespLegendsCardDataViewer
 	{	
 		$output = "";
 		$cardCount = count($this->cards);
+		
+		$output .= $this->GetCardFilterOutput();
 				
 		if ($this->CanCreateCard())
 		{
 			$output .= "<div class='eslegCardCreate'><a href='/wiki/Special:LegendsCardData?create=1'>Create Card</a></div>";
 		}
 		
-		$output .= "Showing data for $cardCount matching cards.<p/>";
+		if ($cardCount != $this->totalCardCount)
+			$output .= "Showing data for $cardCount of {$this->totalCardCount} matching cards.<p/>";
+		else
+			$output .= "Showing data for $cardCount cards.<p/>";
 		
 		$output .= "<table class='eslegCardDataTable'>";
 		$output .= "<tr>";
@@ -622,7 +758,7 @@ class CUespLegendsCardDataViewer
 		$imageBase = preg_replace("# #", "_", $imageBase);
 		$imageHash = GetLegendsImagePathHash($imageBase);
 		if ($imageBase != "") $image = "/" . $imageHash . $imageBase;
-		$image = $this->db->real_escape_string($image);
+		$safeImage = $this->db->real_escape_string($image);
 		
 		$class = $this->db->real_escape_string($this->inputCardData['class']);
 		$set = $this->db->real_escape_string($this->inputCardData['set']);
@@ -675,7 +811,7 @@ class CUespLegendsCardDataViewer
 		$query .= " `set`='$set',";
 		$query .= " rarity='$rarity',";
 		$query .= " text='$text',";
-		$query .= " image='$image',";
+		$query .= " image='$safeImage',";
 		$query .= " obtainable='$obtainable',";
 		$query .= " training1='$training1',";
 		$query .= " training2='$training2',";
@@ -689,6 +825,106 @@ class CUespLegendsCardDataViewer
 		if ($result === false) return false;
 		
 		return $this->UpdateCardImage($this->inputCardName, $image);
+	}
+	
+	
+	public function ShowCardFilters()
+	{
+		return $this->inputCardData['filter'] > 0;
+	}
+	
+	
+	public function GetCardFilterListInput($list, $currentValue, $name)
+	{
+		$output = "<select name='$name' id='eslegCardFilterList$name' class='eslegCardFilterList'>";
+		$output .= "<option value=''>Any</option>";
+		
+		foreach ($list as $i => $value)
+		{
+			$selected = "";
+			if ($value == $currentValue) $selected = "selected";
+			
+			$output .= "<option value='$value' $selected>$value</option>";
+		}		
+		
+		$output .= "</select>";
+		return $output;
+	}
+	
+	
+	public function GetCardFilterOutput()
+	{
+		$filterContentDisplay = "none";
+		$arrowChar = "&#x25BC";
+		
+		if ($this->ShowCardFilters()) 
+		{
+			$filterContentDisplay = "block";
+			$arrowChat = "&#x25B2;";
+		}
+		
+		$inputName = $this->Escape($this->inputCardData['text']);
+		$inputMinMagicka = $this->Escape($this->inputCardData['minMagicka']);
+		$inputMaxMagicka = $this->Escape($this->inputCardData['maxMagicka']);
+		$inputMinPower = $this->Escape($this->inputCardData['minPower']);
+		$inputMaxPower = $this->Escape($this->inputCardData['maxPower']);
+		$inputMinHealth = $this->Escape($this->inputCardData['minHealth']);
+		$inputMaxHealth = $this->Escape($this->inputCardData['maxHealth']);
+		
+		$output = "<div id='eslegCardFilterRoot'>";
+		$output .= "<div class='eslegCardFilterTitle'>Filter Cards<div id='eslegCardFilterArrow'>$arrowChar</div></div>";
+		$output .= "<div id='eslegCardFilterContent' style='display: $filterContentDisplay;'>";
+		
+		$output .= "<form method='get' action='/wiki/Special:LegendsCardData'>";
+		$output .= "<input type='hidden' class='eslegCardFilterInput' name='filter' value='1'>";
+		
+		$output .= "<div class='eslegCardFilterLabel'>Text</div><input type='text' class='eslegCardFilterInput' name='text' maxlength='32' value=\"$inputName\"> <div class='eslegCardFilterNote'>Find text in both the card name and description.</div> <br/>";
+		
+		$output .= "<div class='eslegCardFilterLabel'>Type</div>";
+		$output .= $this->GetCardFilterListInput(self::$LEGENDS_TYPES, $this->inputCardData['type'], 'type');
+				
+		$output .= "<div class='eslegCardFilterLabel'>Rarity</div>";
+		$output .= $this->GetCardFilterListInput(self::$LEGENDS_RARITIES, $this->inputCardData['rarity'], 'rarity');
+		$output .= "<br/>";
+				
+		$output .= "<div class='eslegCardFilterLabel'>Race</div>";
+		$output .= $this->GetCardFilterListInput(self::$LEGENDS_SUBTYPES, $this->inputCardData['subtype'], 'race');
+		
+		$output .= "<div class='eslegCardFilterLabel'>Class</div>";
+		$output .= $this->GetCardFilterListInput(self::$LEGENDS_CLASSES, $this->inputCardData['class'], 'class');
+		$output .= "<br/>";
+		
+		$output .= "<div class='eslegCardFilterLabel'>Attribute</div>";
+		$output .= $this->GetCardFilterListInput(self::$LEGENDS_ATTRIBUTES, $this->inputCardData['attribute'], 'attribute');
+						
+		$output .= "<div class='eslegCardFilterLabel'>Set</div>";
+		$output .= $this->GetCardFilterListInput(self::$LEGENDS_SETS, $this->inputCardData['set'], 'set');
+		$output .= "<br/>";		
+		
+		$output .= "<div class='eslegCardFilterLabel'>Magicka</div>";
+		$output .= "<input type='text' class='eslegCardFilterInputShort' name='minMagicka' maxlength='4' value=\"$inputMinMagicka\" placeholder='min'>";
+		$output .= " to ";
+		$output .= "<input type='text' class='eslegCardFilterInputShort' name='maxMagicka' maxlength='4' value=\"$inputMaxMagicka\" placeholder='max'>";
+		
+		$output .= "<div class='eslegCardFilterLabel'>Power</div>";
+		$output .= "<input type='text' class='eslegCardFilterInputShort' name='minPower' maxlength='4' value=\"$inputMinPower\" placeholder='min'>";
+		$output .= " to ";
+		$output .= "<input type='text' class='eslegCardFilterInputShort' name='maxPower' maxlength='4' value=\"$inputMaxPower\" placeholder='max'>";
+		$output .= "<br/>";
+		
+		$output .= "<div class='eslegCardFilterLabel'>Health</div>";
+		$output .= "<input type='text' class='eslegCardFilterInputShort' name='minHealth' maxlength='4' value=\"$inputMinHealth\" placeholder='min'>";
+		$output .= " to ";
+		$output .= "<input type='text' class='eslegCardFilterInputShort' name='maxHealth' maxlength='4' value=\"$inputMaxHealth\" placeholder='max'>";
+		$output .= "<br/>";
+				
+		$output .= "<input type='submit' value='Search'>";
+		$output .= " &nbsp; &nbsp; <input type='button' value='Reset' onclick='OnLegendsCardFormReset();'>";
+				
+		$output .= "</form>";
+		$output .= "</div>";
+		$output .= "</div>";
+		return $output;
 	}
 	
 	

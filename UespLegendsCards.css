@@ -116,3 +116,57 @@
 .eslegCardCreate {
 	float: right;
 }
+
+#eslegCardFilterRoot {
+	margin-bottom: 10px;
+	border: 1px solid lightgray;
+}
+
+.eslegCardFilterTitle {
+	background-color: #f5deb3;
+	padding: 5px;
+}
+
+.eslegCardFilterTitle:hover {
+	background-color: #ccc;
+	cursor: pointer;
+}
+
+#eslegCardFilterArrow {
+	display: inline;
+}
+
+.eslegCardFilterInput {
+	width: 200px;
+	display: inline-block;
+	margin: 3px;	
+}
+
+.eslegCardFilterInputShort {
+	width: 59px;
+	display: inline-block;
+	margin: 3px;
+}
+
+.eslegCardFilterLabel {
+	width: 120px;
+	text-align: right;
+	display: inline-block;
+	padding-right: 10px;
+	margin: 3px;
+}
+
+#eslegCardFilterContent {
+	padding: 5px;
+}
+
+.eslegCardFilterNote {
+	display: inline-block;
+	color: gray;
+	font-size: 0.9em;
+}
+
+.eslegCardFilterList {
+	width: 150px;
+	margin: 3px;
+}
