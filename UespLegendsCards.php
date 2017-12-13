@@ -61,10 +61,12 @@ function uespLegendsCardData_ParserInit(Parser $parser)
 
 function uespRenderLegendsCard($input, array $args, Parser $parser, PPFrame $frame)
 {
+	global $UESP_LEGENDS_DISAMBIGUATION;
+	
 	$output = "";
 	$cardName = "";
 	$useCardDataLink = false;
-	
+		
 	foreach ($args as $name => $value)
 	{
 		$name = strtolower($name);
@@ -80,6 +82,10 @@ function uespRenderLegendsCard($input, array $args, Parser $parser, PPFrame $fra
 
 	}
 	
+	$linkSuffix = "";
+	$disamb = $UESP_LEGENDS_DISAMBIGUATION[$cardName];
+	if ($disamb) $linkSuffix = "_($disamb)";
+	
 	$output = $parser->recursiveTagParse($input, $frame);
 	$outputCardName = $parser->recursiveTagParse($cardName, $frame); 
 
@@ -93,7 +99,7 @@ function uespRenderLegendsCard($input, array $args, Parser $parser, PPFrame $fra
 		if ($useCardDataLink)
 			$cardURL .= "&card=" . urlencode($outputCardName);
 		else
-			$cardURL .= $outputCardName;
+			$cardURL .= $outputCardName . $linkSuffix;
 		
 		$attributes .= "card=\"" . htmlspecialchars($outputCardName) . "\" ";
 	}

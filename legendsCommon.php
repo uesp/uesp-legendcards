@@ -7,6 +7,14 @@ $UESP_LEGENDS_CARD_WIDTH = 200;
 $UESP_LEGENDS_CARD_HEIGHT = 324;
 
 
+$UESP_LEGENDS_DISAMBIGUATION = array(
+	"Bandit Ambush"		=> "card",
+	"Chaurus"			=> "creature",
+	"Skeleton"			=> "card",
+	"Swims-at-Night"	=> "card",
+);
+
+
 function CreateLegendsTables($db)
 {
 	$query = "CREATE TABLE IF NOT EXISTS cards (
