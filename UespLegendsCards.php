@@ -81,13 +81,13 @@ function uespRenderLegendsCard($input, array $args, Parser $parser, PPFrame $fra
 		}
 
 	}
+		
+	$output = $parser->recursiveTagParse($input, $frame);
+	$outputCardName = $parser->recursiveTagParse($cardName, $frame);
 	
 	$linkSuffix = "";
-	$disamb = $UESP_LEGENDS_DISAMBIGUATION[$cardName];
+	$disamb = $UESP_LEGENDS_DISAMBIGUATION[$outputCardName];
 	if ($disamb) $linkSuffix = "_($disamb)";
-	
-	$output = $parser->recursiveTagParse($input, $frame);
-	$outputCardName = $parser->recursiveTagParse($cardName, $frame); 
 
 	if ($useCardDataLink)
 		$cardURL = "/wiki/Special:LegendsCardData?";
