@@ -9,7 +9,7 @@ $UESP_LEGENDS_CARD_HEIGHT = 324;
 
 $UESP_LEGENDS_DISAMBIGUATION = array(
 	"Bandit Ambush"		=> "card",
-	"Chaurus"			=> "creature",
+	"Chaurus"			=> "card",
 	"Skeleton"			=> "card",
 	"Swims-at-Night"	=> "card",
 );
