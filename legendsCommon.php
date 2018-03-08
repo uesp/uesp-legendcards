@@ -8,10 +8,16 @@ $UESP_LEGENDS_CARD_HEIGHT = 324;
 
 
 $UESP_LEGENDS_DISAMBIGUATION = array(
-	"Bandit Ambush"		=> "card",
-	"Chaurus"			=> "card",
-	"Skeleton"			=> "card",
-	"Swims-at-Night"	=> "card",
+	"Bandit Ambush"			=> "card",
+	"Chaurus"				=> "card",
+	"Skeleton"				=> "card",
+	"Swims-at-Night"		=> "card",
+	"Skeever"				=> "card",
+	"Gargoyle"				=> "card",
+	"Mantikora"				=> "card",
+	"College of Winterhold"	=> "card",
+	"Sightless Pit"			=> "card",
+	"Alfe Fyr"				=> "card",
 );
 
 
@@ -32,6 +38,7 @@ function CreateLegendsTables($db)
 						`set` TINYTEXT NOT NULL,
 						`class` TINYTEXT NOT NULL,
 						obtainable TINYINT(1) NOT NULL DEFAULT 0,
+						`unique` TINYINT(1) NOT NULL DEFAULT 0,
 						training1 TINYTEXT NOT NULL,
 						trainingLevel1 TINYINT NOT NULL,
 						training2 TINYTEXT NOT NULL,
