@@ -28,6 +28,7 @@ class CUespLegendsCardDataViewer
 				"Heroes of Skyrim",
 				"Madhouse Collection",
 				"Monthly Card",
+				"Forgotten Hero Collection",
 			);
 	static $LEGENDS_CLASSES = array(
 			"Archer",
@@ -69,7 +70,8 @@ class CUespLegendsCardDataViewer
 			'power' => 0,
 			'health' => 0,
 			'uses' => '',
-			'obtainable' => 0,
+			'obtainable' => '',
+			'unique' => '',
 			'training1' => '',
 			'trainingLevel1' => 0,
 			'training2' => '',
@@ -106,7 +108,7 @@ class CUespLegendsCardDataViewer
 		
 		if ($this->inputParams['type'] !== null) $this->inputCardData['type'] = $this->inputParams['type'];
 		if ($this->inputParams['subtype'] !== null) $this->inputCardData['subtype'] = $this->inputParams['subtype'];
-		if ($this->inputParams['race'] !== null) $this->inputCardData['subtype'] = $this->inputParams['subtype'];
+		if ($this->inputParams['race'] !== null) $this->inputCardData['subtype'] = $this->inputParams['race'];
 		if ($this->inputParams['class'] !== null) $this->inputCardData['class'] = $this->inputParams['class'];
 		if ($this->inputParams['set'] !== null) $this->inputCardData['set'] = $this->inputParams['set'];
 		if ($this->inputParams['attribute'] !== null) $this->inputCardData['attribute'] = $this->inputParams['attribute'];
@@ -116,7 +118,8 @@ class CUespLegendsCardDataViewer
 		if ($this->inputParams['magicka'] !== null) $this->inputCardData['magicka'] = intval($this->inputParams['magicka']);
 		if ($this->inputParams['power'] !== null) $this->inputCardData['power'] = intval($this->inputParams['power']);
 		if ($this->inputParams['health'] !== null) $this->inputCardData['health'] = intval($this->inputParams['health']);
-		if ($this->inputParams['obtainable'] !== null) $this->inputCardData['obtainable'] = intval($this->inputParams['obtainable']);
+		if ($this->inputParams['obtainable'] !== null && $this->inputParams['obtainable'] != '') $this->inputCardData['obtainable'] = intval($this->inputParams['obtainable']);
+		if ($this->inputParams['unique'] !== null && $this->inputParams['unique'] != '') $this->inputCardData['unique'] = intval($this->inputParams['unique']);
 		if ($this->inputParams['training1'] !== null) $this->inputCardData['training1'] = $this->inputParams['training1'];
 		if ($this->inputParams['training2'] !== null) $this->inputCardData['training2'] = $this->inputParams['training2'];
 		if ($this->inputParams['trainingLevel1'] !== null) $this->inputCardData['trainingLevel1'] = intval($this->inputParams['trainingLevel1']);
@@ -327,6 +330,18 @@ class CUespLegendsCardDataViewer
 			$safeValue = intval($this->inputCardData['maxHealth']);
 			$where[] = "health <= '$safeValue'";
 		}
+		
+		if ($this->inputCardData['obtainable'] !== "")
+		{
+			$safeValue = intval($this->inputCardData['obtainable']);
+			$where[] = "obtainable = '$safeValue'";
+		}
+		
+		if ($this->inputCardData['unique'] !== "")
+		{
+			$safeValue = intval($this->inputCardData['unique']);
+			$where[] = "`unique` = '$safeValue'";
+		}
 				
 		if (count($where) > 0) $query .= " WHERE " . implode( " AND ", $where);		
 		
@@ -436,6 +451,7 @@ class CUespLegendsCardDataViewer
 		if ($uses == "0") $uses = "";
 		
 		$obtainable = $card['obtainable'];
+		$unique = $card['unique'];
 		$training1 = $card['training1'];
 		$training2 = $card['training2'];
 		$trainingLevel1 = $card['trainingLevel1'];
@@ -459,6 +475,11 @@ class CUespLegendsCardDataViewer
 			$obtainable = "Yes";
 		else
 			$obtainable = "No";
+		
+		if ($unique == 1)
+			$unique = "Yes";
+		else
+			$unique = "No";
 			
 		$text = str_replace("\n", "<br/>", $text);
 		
@@ -477,10 +498,11 @@ class CUespLegendsCardDataViewer
 		$output .= "<td>$set</td>";
 		$output .= "<td>$rarity</td>";
 		$output .= "<td>$obtainable</td>";
+		$output .= "<td>$unique</td>";
 		$output .= "<td>$training</td>";
 		$output .= "<td>$uses</td>";
 		$output .= "<td>$text</td>";
-		$output .= "<td>$wikiLink<br/>$imageLink</td>";
+		$output .= "<td><nobr>$wikiLink</nobr><br/><nobr>$imageLink</nobr></td>";
 		
 		$output .= "</tr>";
 		return $output;
@@ -516,6 +538,7 @@ class CUespLegendsCardDataViewer
 		if ($uses == "0") $uses = "";
 		
 		$obtainable = $card['obtainable'];
+		$unique = $card['unique'];
 		$training1 = $this->Escape($card['training1']);
 		$training2 = $this->Escape($card['training2']);
 		$trainingLevel1 = $card['trainingLevel1'];
@@ -539,6 +562,11 @@ class CUespLegendsCardDataViewer
 			$obtainable = "checked";
 		else
 			$obtainable = "";
+		
+		if ($unique == 1)
+			$unique = "checked";
+		else
+			$unique = "";
 		
 		$output .= "<form method='post' action='/wiki/Special:LegendsCardData'>";
 		$output .= "<input type='hidden' value='1' name='save'>";
@@ -583,6 +611,7 @@ class CUespLegendsCardDataViewer
 		$output .= "<tr><th>Set</th><td>$setList</td></tr>";
 		$output .= "<tr><th>Rarity</th><td>$rarityList</td></tr>";
 		$output .= "<tr><th>Obtainable</th><td><input type='checkbox' name='obtainable' value='1' id='eslegCardInputObtainable' $obtainable></td></tr>";
+		$output .= "<tr><th>Unique</th><td><input type='checkbox' name='unique' value='1' id='eslegCardInputUnique' $unique></td></tr>";
 		$output .= "<tr><th>Training 1</th><td><input type='text' name='training1' value='$training1' id='eslegCardInputTraining1'> @ Level <input type='text' name='trainingLevel1' value='$trainingLevel1' id='eslegCardInputTrainingLevel1'></td></tr>";
 		$output .= "<tr><th>Training 2</th><td><input type='text' name='training2' value='$training2' id='eslegCardInputTraining2'> @ Level <input type='text' name='trainingLevel2' value='$trainingLevel2' id='eslegCardInputTrainingLevel2'></td></tr>";
 		$output .= "<tr><th>Uses</th><td><input type='text' value='$uses' name='uses' id='eslegCardInputUses' maxlength='100'></td></tr>";
@@ -621,6 +650,7 @@ class CUespLegendsCardDataViewer
 		if ($uses == "0") $uses = "";
 		
 		$obtainable = $card['obtainable'];
+		$unique = $card['unique'];
 		$training1 = $card['training1'];
 		$training2 = $card['training2'];
 		$trainingLevel1 = $card['trainingLevel1'];
@@ -644,7 +674,12 @@ class CUespLegendsCardDataViewer
 		if ($obtainable == 1)
 			$obtainable = "Yes";
 		else
-			$obtainable = "";
+			$obtainable = "No";
+		
+		if ($unique == 1)
+			$unique = "Yes";
+		else
+			$unique = "No";
 
 		$text = str_replace("\n", "<br/>", $text);
 		
@@ -669,6 +704,7 @@ class CUespLegendsCardDataViewer
 		$output .= "<tr><th>Set</th><td>$set</td></tr>";
 		$output .= "<tr><th>Rarity</th><td>$rarity</td></tr>";
 		$output .= "<tr><th>Obtainable</th><td>$obtainable</td></tr>";
+		$output .= "<tr><th>Unique</th><td>$unique</td></tr>";
 		$output .= "<tr><th>Training</th><td>$training</td></tr>";
 		$output .= "<tr><th>Uses</th><td>$uses</td></tr>";
 		$output .= "<tr><th>Text</th><td>$text</td></tr>";
@@ -711,6 +747,7 @@ class CUespLegendsCardDataViewer
 		$output .= "<th>Set</th>";
 		$output .= "<th>Rarity</th>";
 		$output .= "<th>Obtainable</th>";
+		$output .= "<th>Unique</th>";
 		$output .= "<th>Training</th>";
 		$output .= "<th>Uses</th>";
 		$output .= "<th>Description</th>";
@@ -771,6 +808,7 @@ class CUespLegendsCardDataViewer
 		$trainingLevel1 = $this->inputCardData['trainingLevel1'];
 		$trainingLevel2 = $this->inputCardData['trainingLevel2'];
 		$obtainable = $this->inputCardData['obtainable'];
+		$unique = $this->inputCardData['unique'];
 		$magicka = $this->inputCardData['magicka'];
 		$power = $this->inputCardData['power'];
 		$health = $this->inputCardData['health'];
@@ -813,6 +851,7 @@ class CUespLegendsCardDataViewer
 		$query .= " text='$text',";
 		$query .= " image='$safeImage',";
 		$query .= " obtainable='$obtainable',";
+		$query .= " `unique`='$unique',";
 		$query .= " training1='$training1',";
 		$query .= " training2='$training2',";
 		$query .= " trainingLevel1='$trainingLevel1',";
@@ -916,6 +955,27 @@ class CUespLegendsCardDataViewer
 		$output .= "<input type='text' class='eslegCardFilterInputShort' name='minHealth' maxlength='4' value=\"$inputMinHealth\" placeholder='min'>";
 		$output .= " to ";
 		$output .= "<input type='text' class='eslegCardFilterInputShort' name='maxHealth' maxlength='4' value=\"$inputMaxHealth\" placeholder='max'>";
+		$output .= "<br/>";
+		
+		$output .= "<div class='eslegCardFilterLabel'>Obtainable</div>";
+		$output .= "<select class='eslegCardFilterList' name='obtainable' id='eslegCardFilterListobtainable'>";
+		$selectAny = $this->inputCardData['obtainable'] === '' ? "selected" : "";
+		$selectYes = $this->inputCardData['obtainable'] === 1 ? "selected" : "";
+		$selectNo = $this->inputCardData['obtainable'] === 0 ? "selected" : "";
+		$output .= "<option value='' $selectAny>Any</option>";
+		$output .= "<option value='1' $selectYes>Yes</option>";
+		$output .= "<option value='0' $selectNo>No</option>";
+		$output .= "</select>";
+				
+		$output .= "<div class='eslegCardFilterLabel'>Unique</div>";
+		$output .= "<select class='eslegCardFilterList' name='unique' id='eslegCardFilterListunique'>";
+		$selectAny = $this->inputCardData['unique'] === '' ? "selected" : "";
+		$selectYes = $this->inputCardData['unique'] === 1 ? "selected" : "";
+		$selectNo = $this->inputCardData['unique'] === 0 ? "selected" : "";
+		$output .= "<option value='' $selectAny>Any</option>";
+		$output .= "<option value='1' $selectYes>Yes</option>";
+		$output .= "<option value='0' $selectNo>No</option>";
+		$output .= "</select>";
 		$output .= "<br/>";
 				
 		$output .= "<input type='submit' value='Search'>";
