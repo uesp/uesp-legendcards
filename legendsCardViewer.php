@@ -21,17 +21,9 @@ class CUespLegendsCardDataViewer
 					"Vampire", "Wamasu", "Werewolf", "Wolf", "Wood Elf", "Wraith" );
 	static $LEGENDS_ATTRIBUTES = array("Agility", "Endurance", "Intelligence", "Neutral", "Strength", "Willpower");
 	static $LEGENDS_RARITIES = array("Common", "Rare", "Epic", "Legendary");
-	static $LEGENDS_SETS = null;
 	
-	/* array(
-				"Clockwork City",
-				"Core Set",
-				"Dark Brotherhood",
-				"Heroes of Skyrim",
-				"Madhouse Collection",
-				"Monthly Card",
-				"Forgotten Hero Collection",
-			); */
+				/* Loaded from database */
+	static $LEGENDS_SETS = null;
 	
 	static $LEGENDS_CLASSES = array(
 			"Archer",
@@ -56,6 +48,10 @@ class CUespLegendsCardDataViewer
 	public $inputSaveCard = false;
 	public $inputCreateCard = false;
 	public $inputEditSets = false;
+	public $inputEditDisambiguation = false;
+	public $inputDeleteDisambiguation = "";
+	public $inputAddDisambiguation = "";
+	public $inputAddLinkSuffix = "";
 	
 	public $wikiContext = null;
 	public $db = null;
@@ -114,6 +110,10 @@ class CUespLegendsCardDataViewer
 		if ($this->inputParams['editsets'] != "") $this->inputEditSets = intval($this->inputParams['editsets']) != 0;
 		if ($this->inputParams['deleteset'] != "") $this->inputDeleteSet = $this->inputParams['deleteset'];
 		if ($this->inputParams['newset'] != "") $this->inputAddSet = $this->inputParams['newset'];
+		if ($this->inputParams['editdisamb'] != "") $this->inputEditDisambiguation = intval($this->inputParams['editdisamb']);
+		if ($this->inputParams['newdisamb'] != "") $this->inputAddDisambiguation = $this->inputParams['newdisamb'];
+		if ($this->inputParams['newlinksuffix'] != "") $this->inputAddLinkSuffix = $this->inputParams['newlinksuffix'];
+		if ($this->inputParams['deletedisamb'] != "") $this->inputDeleteDisambiguation = $this->inputParams['deletedisamb'];
 		
 		if ($this->inputCreateCard) $this->inputCardName = trim($this->inputCardName);
 		
@@ -401,6 +401,12 @@ class CUespLegendsCardDataViewer
 	}
 	
 	
+	public function LoadDisambiguationData()
+	{
+		LoadLegendsDisambiguationPages($this->db);
+	}
+	
+	
 	public function LoadSetData()
 	{
 		if (self::$LEGENDS_SETS != null) return true;
@@ -457,7 +463,7 @@ class CUespLegendsCardDataViewer
 	{
 		$output = "<div class='eslegBreadcrumb'>";
 		
-		if ($this->inputCardName != "" || $this->inputSaveCard || $this->inputCreateCard || $this->inputEditSets)
+		if ($this->inputCardName != "" || $this->inputSaveCard || $this->inputCreateCard || $this->inputEditSets || $this->inputEditDisambiguation)
 		{
 			if ($this->inputRenameCard != "")
 			{
@@ -579,9 +585,107 @@ class CUespLegendsCardDataViewer
 	}
 	
 	
+	public function GetCardDeleteDisambiguationOutput()
+	{
+		global $UESP_LEGENDS_DISAMBIGUATION;
+		
+		if (!$this->CanEditCard()) return "You do not have permission to edit disambiguation data!";
+		if (!$this->InitDatabaseWrite()) return "Failed to initialize database!";
+		$this->LoadDisambiguationData();
+		
+		$deleteCard = $this->inputDeleteDisambiguation;
+		$safeCard = $this->Escape($deleteCard);
+		$safeCardDB = $this->db->real_escape_string($deleteCard);
+		
+		$query = "DELETE FROM disambiguation WHERE name='$safeCardDB';";
+		$result = $this->db->query($query);
+		if ($result === false) return "Error: Failed to delete disambiguation page '<em>$safeCard</em>'!<br/>" . $this->db->error;
+		
+		unset($UESP_LEGENDS_DISAMBIGUATION[$deleteCard]);
+		
+		$output = "Deleted disambiguation page '<em>$safeCard</em>'! ";
+		
+		$output .= $this->GetCardEditDisambiguationOutput();
+		
+		return $output;
+	}
+	
+	
+	public function GetCardAddDisambiguationOutput()
+	{
+		global $UESP_LEGENDS_DISAMBIGUATION;
+		
+		if (!$this->CanEditCard()) return "You do not have permission to edit disambiguation data!";
+		if (!$this->InitDatabaseWrite()) return "Failed to initialize database!";
+		$this->LoadDisambiguationData();
+		
+		$newCard = $this->inputAddDisambiguation;
+		$newLinkSuffix = $this->inputAddLinkSuffix;
+		$safeCard = $this->Escape($newCard);
+		$safeSuffix = $this->Escape($newLinkSuffix);
+		$safeNameDB = $this->db->real_escape_string($newCard);
+		$safeLinkSuffixDB = $this->db->real_escape_string($newLinkSuffix);
+		
+		$query = "INSERT INTO disambiguation(name, linkSuffix) VALUES('$safeNameDB', '$safeLinkSuffixDB');";
+		$result = $this->db->query($query);
+		if ($result === false) return "Error: Failed to add new disambiguation page '<em>$safeCard</em>'!<br/>" . $this->db->error;
+		
+		$UESP_LEGENDS_DISAMBIGUATION[$newCard] = $newLinkSuffix;
+		ksort($UESP_LEGENDS_DISAMBIGUATION);
+		
+		$output = "Added new disambiguation page '<em>$safeCard</em>'! ";
+		
+		$output .= $this->GetCardEditDisambiguationOutput();
+		
+		return $output;
+	}
+	
+	
+	public function GetCardEditDisambiguationOutput()
+	{
+		global $UESP_LEGENDS_DISAMBIGUATION;
+		
+		if (!$this->CanEditCard()) return "You do not have permission to edit disambiguation data!";
+		$this->LoadDisambiguationData();
+		
+		$output = "";
+		$count = count($UESP_LEGENDS_DISAMBIGUATION);
+		$output .= "Editing $count disambiguation pages.<br/>";
+		
+		$output .= "<table class='eslegCardDetailsTable'>";
+		$output .= "<tr><th>Card Name</th><th>Link Suffix</th></tr>";
+		
+		foreach ($UESP_LEGENDS_DISAMBIGUATION as $cardName => $linkSuffix)
+		{
+			$safeName = $this->Escape($cardName);
+			$safeSuffix = $this->Escape($linkSuffix);
+			
+			$output .= "<tr><td>$safeName</td><td>$safeSuffix</td><td>";
+			$output .= "<form method='post' action='/wiki/Special:LegendsCardData'>";
+			$output .= "<input type='hidden' value='1' name='editdisamb'>";
+			$output .= "<input type='hidden' value='$safeName' name='deletedisamb'>";
+			$output .= "<input type='submit' value='Delete'>";
+			$output .= "</form>";
+			$output .= "</td></tr>";
+		}
+		
+		$output .= "<tr>";
+		$output .= "<form method='post' action='/wiki/Special:LegendsCardData'>";
+		$output .= "<input type='hidden' value='1' name='editdisamb'>";
+		$output .= "<td><input type='text' name='newdisamb' value='' maxlength='36' /></td>";
+		$output .= "<td><input type='text' name='newlinksuffix' value='card' maxlength='16' /></td>";
+		$output .= "<td><input type='submit' value='Add New'></td>";
+		$output .= "</form>";
+		$output .= "</tr>";
+		$output .= "</table>";
+		
+		return $output;
+	}
+	
+	
 	public function GetCardDeleteSetOutput()
 	{
-		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if (!$this->CanEditCard()) return "You do not have permission to edit set data!";
 		if (!$this->LoadSetData()) return "Failed to load set data!";
 		if (!$this->InitDatabaseWrite()) return "Failed to initialize database!";
 		
@@ -601,7 +705,7 @@ class CUespLegendsCardDataViewer
 			}
 		}
 		
-		$output = "Delete set '<em>$safeSet</em>'! ";
+		$output = "Deleted set '<em>$safeSet</em>'! ";
 		
 		$output .= $this->GetCardEditSetsOutput();
 		
@@ -611,7 +715,7 @@ class CUespLegendsCardDataViewer
 	
 	public function GetCardAddSetOutput()
 	{
-		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if (!$this->CanEditCard()) return "You do not have permission to edit set data!";
 		if (!$this->LoadSetData()) return "Failed to load set data!";
 		if (!$this->InitDatabaseWrite()) return "Failed to initialize database!";
 		
@@ -634,7 +738,7 @@ class CUespLegendsCardDataViewer
 	
 	public function GetCardEditSetsOutput()
 	{
-		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if (!$this->CanEditCard()) return "You do not have permission to edit set data!";
 		if (!$this->LoadSetData()) return "Failed to load set data!";
 		
 		$output = "";
@@ -940,7 +1044,7 @@ class CUespLegendsCardDataViewer
 				
 		if ($this->CanCreateCard())
 		{
-			$output .= "<div class='eslegCardCreate'><a href='/wiki/Special:LegendsCardData?editsets=1'>Edit Sets</a> &nbsp; <a href='/wiki/Special:LegendsCardData?create=1'>Create Card</a></div>";
+			$output .= "<div class='eslegCardCreate'><a href='/wiki/Special:LegendsCardData?editdisamb=1'>Edit Disambiguation</a> &nbsp; <a href='/wiki/Special:LegendsCardData?editsets=1'>Edit Sets</a> &nbsp; <a href='/wiki/Special:LegendsCardData?create=1'>Create Card</a></div>";
 		}
 		
 		if ($cardCount != $this->totalCardCount)
@@ -1342,6 +1446,15 @@ class CUespLegendsCardDataViewer
 				$output .= $this->GetCardAddSetOutput();
 			else
 				$output .= $this->GetCardEditSetsOutput();
+		}
+		else if ($this->inputEditDisambiguation)
+		{
+			if ($this->inputDeleteDisambiguation)
+				$output .= $this->GetCardDeleteDisambiguationOutput();
+			else if ($this->inputAddDisambiguation)
+				$output .= $this->GetCardAddDisambiguationOutput();
+			else
+				$output .= $this->GetCardEditDisambiguationOutput();
 		}
 		else if ($this->inputSaveCard)
 		{

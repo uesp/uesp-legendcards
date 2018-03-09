@@ -63,6 +63,8 @@ function uespRenderLegendsCard($input, array $args, Parser $parser, PPFrame $fra
 {
 	global $UESP_LEGENDS_DISAMBIGUATION;
 	
+	LoadLegendsDisambiguationPages();
+	
 	$output = "";
 	$cardName = "";
 	$useCardDataLink = false;

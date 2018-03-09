@@ -6,19 +6,9 @@ $UESP_LEGENDS_OUTPUT_PATH = "./cardimages/";
 $UESP_LEGENDS_CARD_WIDTH = 200;
 $UESP_LEGENDS_CARD_HEIGHT = 324;
 
-
-$UESP_LEGENDS_DISAMBIGUATION = array(
-	"Bandit Ambush"			=> "card",
-	"Chaurus"				=> "card",
-	"Skeleton"				=> "card",
-	"Swims-at-Night"		=> "card",
-	"Skeever"				=> "card",
-	"Gargoyle"				=> "card",
-	"Mantikora"				=> "card",
-	"College of Winterhold"	=> "card",
-	"Sightless Pit"			=> "card",
-	"Alfe Fyr"				=> "card",
-);
+	/* Loaded from database */
+$UESP_LEGENDS_DISAMBIGUATION = array();
+$uespLegendsDisambiguationLoaded = false;
 
 
 function CreateLegendsTables($db)
@@ -91,6 +81,15 @@ function CreateLegendsTables($db)
 	
 	$result = $db->query($query);
 	if ($result === false) return "Failed to create the sets table!";
+	
+	
+	$query = "CREATE TABLE IF NOT EXISTS disambiguation (
+						name TINYTEXT NOT NULL,
+						linkSuffix TINYTEXT NOT NULL
+					);";
+	
+	$result = $db->query($query);
+	if ($result === false) return "Failed to create the disambiguation table!";
 	
 	$query = "CREATE TABLE IF NOT EXISTS logInfo (
 						id TINYTEXT NOT NULL,
@@ -175,7 +174,7 @@ function CreateLegendsPopupImage($cardName, $imageBaseName, $outputPath = null, 
 	if ($image == null || $resizeImage == null)
 	{
 		if ($print) print("\t$cardName: Failed to create PNG image from file '$imageFilename'!\n");
-		return false;;
+		return false;
 	}
 	
 	imagealphablending($resizeImage, false);
@@ -195,4 +194,43 @@ function CreateLegendsPopupImage($cardName, $imageBaseName, $outputPath = null, 
 	
 	if ($print) print("\t$cardName: Saved image to '$outputFilename'!\n");
 	return true;
+}
+
+
+function LoadLegendsDisambiguationPages($db = null)
+{
+	global $UESP_LEGENDS_DISAMBIGUATION;
+	global $uespLegendsDisambiguationLoaded;
+	global $uespLegendsReadDBHost, $uespLegendsReadUser, $uespLegendsReadPW, $uespLegendsDatabase;
+	
+	if ($uespLegendsDisambiguationLoaded) return $UESP_LEGENDS_DISAMBIGUATION;
+	
+	$deleteDb = false;
+	$uespLegendsDisambiguationLoaded = true;
+	
+	if ($db == null)
+	{
+		$deleteDb = true;
+		$db = new mysqli($uespLegendsReadDBHost, $uespLegendsReadUser, $uespLegendsReadPW, $uespLegendsDatabase);
+		if ($db->connect_error) return false;
+	}
+	
+	$query = "SELECT * FROM disambiguation;";
+	$result = $db->query($query);
+	
+	if ($result === false)
+	{
+		if ($deleteDb) $db->close();
+		return $UESP_LEGENDS_DISAMBIGUATION;
+	}
+	
+	while (($row = $result->fetch_assoc()))
+	{
+		$UESP_LEGENDS_DISAMBIGUATION[$row['name']] = $row['linkSuffix'];
+	}
+	
+	if ($deleteDb) $db->close();
+	
+	ksort($UESP_LEGENDS_DISAMBIGUATION);
+	return $UESP_LEGENDS_DISAMBIGUATION;
 }
