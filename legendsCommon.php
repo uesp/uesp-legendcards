@@ -58,6 +58,33 @@ function CreateLegendsTables($db)
 	$result = $db->query($query);
 	if ($result === false) return "Failed to create the cards table!";
 	
+	$query = "CREATE TABLE IF NOT EXISTS deletedCards (
+						name TINYTEXT NOT NULL,
+						type TINYTEXT NOT NULL,
+						subtype TINYTEXT NOT NULL,
+						text TEXT NOT NULL,
+						image TINYTEXT NOT NULL,
+						magicka INTEGER NOT NULL DEFAULT 0,
+						power INTEGER NOT NULL DEFAULT 0,
+						health INTEGER NOT NULL DEFAULT 0,
+						rarity TINYTEXT NOT NULL,
+						attribute TINYTEXT NOT NULL,
+						attribute2 TINYTEXT NOT NULL,
+						`set` TINYTEXT NOT NULL,
+						`class` TINYTEXT NOT NULL,
+						obtainable TINYINT(1) NOT NULL DEFAULT 0,
+						`unique` TINYINT(1) NOT NULL DEFAULT 0,
+						training1 TINYTEXT NOT NULL,
+						trainingLevel1 TINYINT NOT NULL,
+						training2 TINYTEXT NOT NULL,
+						trainingLevel2 TINYINT NOT NULL,
+						uses TINYTEXT NOT NULL,
+						deleteTimestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+					);";
+	
+	$result = $db->query($query);
+	if ($result === false) return "Failed to create the cards table!";
+	
 	$query = "CREATE TABLE IF NOT EXISTS logInfo (
 						id TINYTEXT NOT NULL,
 						value TINYTEXT NOT NULL,

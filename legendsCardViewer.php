@@ -666,11 +666,11 @@ class CUespLegendsCardDataViewer
 	
 	public function GetCardRenameOutput()
 	{
-		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
-		if ($this->singleCardData == null) return "No card matching '$safeName' found!";
-		
 		$safeName = $this->Escape($this->inputRenameCard);
 		$card = $this->singleCardData;
+		
+		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if ($this->singleCardData == null) return "No card matching '$safeName' found!";
 		
 		$name = $this->Escape($card['name']);
 		
@@ -693,10 +693,23 @@ class CUespLegendsCardDataViewer
 	
 	public function GetCardDeleteOutput()
 	{
+		$safeName = $this->Escape($this->inputDeleteCard);
+		$card = $this->singleCardData;
+		
 		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
 		if ($this->singleCardData == null) return "No card matching '$safeName' found!";
+				
+		$name = $this->Escape($card['name']);
 		
-		$output = "Not yet implemented....";
+		$output = "";
+		$output .= "<form method='post' action='/wiki/Special:LegendsCardData'>";
+		$output .= "<input type='hidden' value='1' name='save'>";
+		$output .= "<input type='hidden' value='$name' name='delete'>";
+		
+		$output .= "<br/>This will permanently delete the '<em>$safeName</em>' card!<br/>Are you sure you wish to proceed?<p/>";
+		$output .= "<input type='submit' value='Yes, Delete It!' class='eslegCardDeleteButton'> &nbsp; ";
+		$output .= "<button type='cancel'  onclick=\"window.location='/wiki/Special:LegendsCardData?card=$safeName';return false;\">No, Cancel!</button> ";
+		$output .= "</form>";
 	
 		return $output;
 	}
@@ -1120,8 +1133,30 @@ class CUespLegendsCardDataViewer
 	public function GetCardSaveDeleteOutput()
 	{
 		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if (!$this->InitDatabaseWrite()) return "Database error!";
 		
-		$output = "Not implemented yet...";
+		$name = $this->inputDeleteCard;
+		$safeName = $this->Escape($name);
+		$output = "";
+		
+		if (!$this->DoesCardExist($name))
+		{
+			$output .= "<div class='eslegCardRenameWarning'>Error: Could not delete card '<em>$safeName</em>' as it doesn't exist!</div>";
+			return $output;
+		}
+		
+		$safeNameDB = $this->db->real_escape_string($name);
+		$query = "INSERT INTO deletedCards SELECT *, CURRENT_TIMESTAMP() FROM cards WHERE name='$safeNameDB';";
+		$result = $this->db->query($query);
+		if ($result === false) return "Error: Failed to delete the card '<em>$safeName</em>'!<br/>" . $this->db->error;
+		
+		$query = "DELETE FROM cards WHERE name='$safeNameDB';";
+		$result = $this->db->query($query);
+		if ($result === false) return "Error: Failed to delete the card '<em>$safeName</em>'!<br/>" . $this->db->error;
+		
+		$date = new DateTime(null, new DateTimeZone('America/New_York'));
+		$timestamp = $date->format("Y-m-d G:i:s");
+		$output .= "Successfully deleted the card '<em>$safeName</em> at $timestamp'! This card can be manually restored using this name and time.";
 		
 		return $output;
 	}
