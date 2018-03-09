@@ -184,3 +184,7 @@
 	padding: 5px;
 	border: solid 1px gray;	
 }
+
+.eslegCardDeleteButton {
+	border: 2px solid red;
+}
