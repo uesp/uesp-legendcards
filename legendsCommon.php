@@ -83,7 +83,14 @@ function CreateLegendsTables($db)
 					);";
 	
 	$result = $db->query($query);
-	if ($result === false) return "Failed to create the cards table!";
+	if ($result === false) return "Failed to create the deletedCards table!";
+	
+	$query = "CREATE TABLE IF NOT EXISTS sets (
+						name TINYTEXT NOT NULL
+					);";
+	
+	$result = $db->query($query);
+	if ($result === false) return "Failed to create the sets table!";
 	
 	$query = "CREATE TABLE IF NOT EXISTS logInfo (
 						id TINYTEXT NOT NULL,
