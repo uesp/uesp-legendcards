@@ -21,7 +21,9 @@ class CUespLegendsCardDataViewer
 					"Vampire", "Wamasu", "Werewolf", "Wolf", "Wood Elf", "Wraith" );
 	static $LEGENDS_ATTRIBUTES = array("Agility", "Endurance", "Intelligence", "Neutral", "Strength", "Willpower");
 	static $LEGENDS_RARITIES = array("Common", "Rare", "Epic", "Legendary");
-	static $LEGENDS_SETS = array(
+	static $LEGENDS_SETS = null;
+	
+	/* array(
 				"Clockwork City",
 				"Core Set",
 				"Dark Brotherhood",
@@ -29,7 +31,8 @@ class CUespLegendsCardDataViewer
 				"Madhouse Collection",
 				"Monthly Card",
 				"Forgotten Hero Collection",
-			);
+			); */
+	
 	static $LEGENDS_CLASSES = array(
 			"Archer",
 			"Assassin",
@@ -48,8 +51,11 @@ class CUespLegendsCardDataViewer
 	public $inputEditCard = "";
 	public $inputRenameCard = "";
 	public $inputDeleteCard = "";
+	public $inputDeleteSet = "";
+	public $inputAddSet = "";
 	public $inputSaveCard = false;
 	public $inputCreateCard = false;
+	public $inputEditSets = false;
 	
 	public $wikiContext = null;
 	public $db = null;
@@ -105,6 +111,9 @@ class CUespLegendsCardDataViewer
 		if ($this->inputParams['delete'] != "") $this->inputDeleteCard = $this->inputParams['delete'];
 		if ($this->inputParams['save'] != "") $this->inputSaveCard = intval($this->inputParams['save']) != 0;
 		if ($this->inputParams['create'] != "") $this->inputCreateCard = intval($this->inputParams['create']) != 0;
+		if ($this->inputParams['editsets'] != "") $this->inputEditSets = intval($this->inputParams['editsets']) != 0;
+		if ($this->inputParams['deleteset'] != "") $this->inputDeleteSet = $this->inputParams['deleteset'];
+		if ($this->inputParams['newset'] != "") $this->inputAddSet = $this->inputParams['newset'];
 		
 		if ($this->inputCreateCard) $this->inputCardName = trim($this->inputCardName);
 		
@@ -392,10 +401,33 @@ class CUespLegendsCardDataViewer
 	}
 	
 	
+	public function LoadSetData()
+	{
+		if (self::$LEGENDS_SETS != null) return true;
+		
+		self::$LEGENDS_SETS = array();
+		
+		if (!$this->InitDatabase()) return false;
+		
+		$query = "SELECT * FROM sets;";
+		$result = $this->db->query($query);
+		if ($result === false) return $this->ReportError("ERROR: Failed to load set data from table!");
+		
+		while (($set = $result->fetch_assoc()))
+		{
+			self::$LEGENDS_SETS[] = $set['name'];
+		}
+		
+		sort(self::$LEGENDS_SETS);
+		return true;
+	}
+	
+	
 	public function LoadCardData()
 	{
 		if (!$this->InitDatabase()) return false;
 		
+		$this->LoadSetData();
 		$this->GetTotalCards();
 		
 		$query = $this->GetCardDataQuery();
@@ -425,7 +457,7 @@ class CUespLegendsCardDataViewer
 	{
 		$output = "<div class='eslegBreadcrumb'>";
 		
-		if ($this->inputCardName != "" || $this->inputSaveCard || $this->inputCreateCard)
+		if ($this->inputCardName != "" || $this->inputSaveCard || $this->inputCreateCard || $this->inputEditSets)
 		{
 			if ($this->inputRenameCard != "")
 			{
@@ -547,9 +579,98 @@ class CUespLegendsCardDataViewer
 	}
 	
 	
+	public function GetCardDeleteSetOutput()
+	{
+		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if (!$this->LoadSetData()) return "Failed to load set data!";
+		if (!$this->InitDatabaseWrite()) return "Failed to initialize database!";
+		
+		$deleteSet = $this->inputDeleteSet;
+		$safeSet = $this->Escape($deleteSet);
+		$safeSetDB = $this->db->real_escape_string($deleteSet);
+		
+		$query = "DELETE FROM sets WHERE name='$safeSetDB';";
+		$result = $this->db->query($query);
+		if ($result === false) return "Error: Failed to delete set '<em>$safeSet</em>'!<br/>" . $this->db->error;
+		
+		foreach (self::$LEGENDS_SETS as $i => $set)
+		{
+			if ($set == $deleteSet) 
+			{
+				unset(self::$LEGENDS_SETS[$i]);
+			}
+		}
+		
+		$output = "Delete set '<em>$safeSet</em>'! ";
+		
+		$output .= $this->GetCardEditSetsOutput();
+		
+		return $output;
+	}
+	
+	
+	public function GetCardAddSetOutput()
+	{
+		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if (!$this->LoadSetData()) return "Failed to load set data!";
+		if (!$this->InitDatabaseWrite()) return "Failed to initialize database!";
+		
+		$newSet = $this->inputAddSet;
+		$safeSet = $this->Escape($newSet);
+		$safeSetDB = $this->db->real_escape_string($newSet);
+		
+		$query = "INSERT INTO sets(name) VALUES('$safeSetDB');";
+		$result = $this->db->query($query);
+		if ($result === false) return "Error: Failed to add new set '<em>$safeSet</em>'!<br/>" . $this->db->error;
+		
+		self::$LEGENDS_SETS[] = $newSet;
+		$output = "Added new set '<em>$safeSet</em>'! ";
+		
+		$output .= $this->GetCardEditSetsOutput();
+		
+		return $output;
+	}
+	
+	
+	public function GetCardEditSetsOutput()
+	{
+		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if (!$this->LoadSetData()) return "Failed to load set data!";
+		
+		$output = "";
+		$count = count(self::$LEGENDS_SETS);
+		$output .= "Editing $count card sets.<br/>";
+		
+		$output .= "<table class='eslegCardDetailsTable'>";		
+		
+		foreach (self::$LEGENDS_SETS as $i => $set)
+		{
+			$safeSet = $this->Escape($set);
+			$output .= "<tr><td>$safeSet</td><td>";
+			$output .= "<form method='post' action='/wiki/Special:LegendsCardData'>";
+			$output .= "<input type='hidden' value='1' name='editsets'>";
+			$output .= "<input type='hidden' value='$safeSet' name='deleteset'>";
+			$output .= "<input type='submit' value='Delete'>";
+			$output .= "</form>";
+			$output .= "</td></tr>";
+		}
+		
+		$output .= "<tr><td>";
+		$output .= "<form method='post' action='/wiki/Special:LegendsCardData'>";
+		$output .= "<input type='hidden' value='1' name='editsets'>";
+		$output .= "<input type='text' name='newset' value='' maxlength='36' /></td><td><input type='submit' value='Add New'>";
+		$output .= "</form>";
+		$output .= "</td></tr>";
+		$output .= "</table>";		
+		
+		return $output;
+	}
+	
+	
 	public function GetCardEditOutput()
 	{
 		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		$this->LoadSetData();
 		
 		$output = "";
 		$safeName = $this->Escape($this->inputEditCard);
@@ -819,7 +940,7 @@ class CUespLegendsCardDataViewer
 				
 		if ($this->CanCreateCard())
 		{
-			$output .= "<div class='eslegCardCreate'><a href='/wiki/Special:LegendsCardData?create=1'>Create Card</a></div>";
+			$output .= "<div class='eslegCardCreate'><a href='/wiki/Special:LegendsCardData?editsets=1'>Edit Sets</a> &nbsp; <a href='/wiki/Special:LegendsCardData?create=1'>Create Card</a></div>";
 		}
 		
 		if ($cardCount != $this->totalCardCount)
@@ -996,6 +1117,8 @@ class CUespLegendsCardDataViewer
 	
 	public function GetCardFilterOutput()
 	{
+		$this->LoadSetData();
+		
 		$filterContentDisplay = "none";
 		$arrowChar = "&#x25BC";
 		
@@ -1211,7 +1334,16 @@ class CUespLegendsCardDataViewer
 	{
 		$output = $this->GetBreadcrumbTrail();
 		
-		if ($this->inputSaveCard)
+		if ($this->inputEditSets)
+		{
+			if ($this->inputDeleteSet)
+				$output .= $this->GetCardDeleteSetOutput();
+			else if ($this->inputAddSet)
+				$output .= $this->GetCardAddSetOutput();
+			else
+				$output .= $this->GetCardEditSetsOutput();
+		}
+		else if ($this->inputSaveCard)
 		{
 			if ($this->inputRenameCard != "")
 				$output .= $this->GetCardSaveRenameOutput();
