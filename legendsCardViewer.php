@@ -471,7 +471,7 @@ class CUespLegendsCardDataViewer
 	}
 	
 	
-	public function getCardOutputRow($card)
+	public function GetCardOutputRow($card)
 	{
 		$output = "<tr>";
 		
@@ -836,7 +836,7 @@ class CUespLegendsCardDataViewer
 				
 		foreach ($this->cards as $name => $card)
 		{
-			$output .= $this->getCardOutputRow($card);
+			$output .= $this->GetCardOutputRow($card);
 		}
 		
 		$output .= "</table>";
