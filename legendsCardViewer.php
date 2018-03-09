@@ -46,6 +46,8 @@ class CUespLegendsCardDataViewer
 	public $inputParams = array();
 	public $inputCardName = "";
 	public $inputEditCard = "";
+	public $inputRenameCard = "";
+	public $inputDeleteCard = "";
 	public $inputSaveCard = false;
 	public $inputCreateCard = false;
 	
@@ -99,6 +101,8 @@ class CUespLegendsCardDataViewer
 		if ($this->inputParams['name'] != "") $this->inputCardName = $this->inputParams['name'];
 		if ($this->inputParams['card'] != "") $this->inputCardName = $this->inputParams['card'];
 		if ($this->inputParams['edit'] != "") $this->inputEditCard = $this->inputParams['edit'];
+		if ($this->inputParams['rename'] != "") $this->inputRenameCard = $this->inputParams['rename'];
+		if ($this->inputParams['delete'] != "") $this->inputDeleteCard = $this->inputParams['delete'];
 		if ($this->inputParams['save'] != "") $this->inputSaveCard = intval($this->inputParams['save']) != 0;
 		if ($this->inputParams['create'] != "") $this->inputCreateCard = intval($this->inputParams['create']) != 0;
 		
@@ -152,6 +156,8 @@ class CUespLegendsCardDataViewer
 	public function InitDatabase()
 	{
 		global $uespLegendsReadDBHost, $uespLegendsReadUser, $uespLegendsReadPW, $uespLegendsDatabase;
+		
+		if ($this->db != null) return true;
 		
 		$this->db = new mysqli($uespLegendsReadDBHost, $uespLegendsReadUser, $uespLegendsReadPW, $uespLegendsDatabase);
 		if ($this->db->connect_error) return $this->ReportError("ERROR: Could not connect to mysql database!");
@@ -352,7 +358,8 @@ class CUespLegendsCardDataViewer
 	
 	public function GetCardDataQuery()
 	{
-		if ($this->inputCardName != "")
+		
+		if ($this->inputCardName != "" && $this->inputRenameCard == "")
 		{
 			$safeName = $this->db->real_escape_string($this->inputCardName);
 			$query = "SELECT * FROM cards WHERE name='$safeName';";
@@ -360,6 +367,16 @@ class CUespLegendsCardDataViewer
 		else if ($this->inputEditCard != "")
 		{
 			$safeName = $this->db->real_escape_string($this->inputEditCard);
+			$query = "SELECT * FROM cards WHERE name='$safeName';";
+		}
+		else if ($this->inputRenameCard != "")
+		{
+			$safeName = $this->db->real_escape_string($this->inputRenameCard);
+			$query = "SELECT * FROM cards WHERE name='$safeName';";
+		}
+		else if ($this->inputDeleteCard != "")
+		{
+			$safeName = $this->db->real_escape_string($this->inputDeleteCard);
 			$query = "SELECT * FROM cards WHERE name='$safeName';";
 		}
 		else if ($this->inputCardData['filter'] > 0)
@@ -370,7 +387,7 @@ class CUespLegendsCardDataViewer
 		{
 			$query = "SELECT * FROM cards ORDER BY name;";
 		}
-		
+				
 		return $query;
 	}
 	
@@ -410,7 +427,28 @@ class CUespLegendsCardDataViewer
 		
 		if ($this->inputCardName != "" || $this->inputSaveCard || $this->inputCreateCard)
 		{
+			if ($this->inputRenameCard != "")
+			{
+				$safeName = urlencode($this->inputCardName);
+				$output .= "<a href='/wiki/Special:LegendsCardData'>&laquo; View All Cards</a>";
+				$output .= " : " . "<a href='/wiki/Special:LegendsCardData?card=$safeName'>View Card</a>";
+			}
+			else
+			{
+				$output .= "<a href='/wiki/Special:LegendsCardData'>&laquo; View All Cards</a>";
+			}
+		}
+		else if ($this->inputDeleteCard != "")
+		{
+			$safeName = urlencode($this->inputDeleteCard);
 			$output .= "<a href='/wiki/Special:LegendsCardData'>&laquo; View All Cards</a>";
+			$output .= " : " . "<a href='/wiki/Special:LegendsCardData?card=$safeName'>View Card</a>";
+		}
+		else if ($this->inputRenameCard != "")
+		{
+			$safeName = urlencode($this->inputRenameCard);
+			$output .= "<a href='/wiki/Special:LegendsCardData'>&laquo; View All Cards</a>";
+			$output .= " : " . "<a href='/wiki/Special:LegendsCardData?card=$safeName'>View Card</a>";
 		}
 		else if ($this->inputEditCard != "")
 		{
@@ -593,7 +631,7 @@ class CUespLegendsCardDataViewer
 		
 		if ($this->inputCreateCard)
 		{
-			$output .= "<tr><th>Name</th><td><input type='text' value=\"$name\" name='name' id='eslegCardInputName' maxlength='100'> <small>Must be unique and can't be changed later.</small></td></tr>";
+			$output .= "<tr><th>Name</th><td><input type='text' value=\"$name\" name='name' id='eslegCardInputName' maxlength='100'> <small>Must be unique.</small></td></tr>";
 		}
 		else
 		{
@@ -622,6 +660,44 @@ class CUespLegendsCardDataViewer
 		$output .= "</table>";
 		$output .= "</form>";
 		
+		return $output;
+	}
+	
+	
+	public function GetCardRenameOutput()
+	{
+		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if ($this->singleCardData == null) return "No card matching '$safeName' found!";
+		
+		$safeName = $this->Escape($this->inputRenameCard);
+		$card = $this->singleCardData;
+		
+		$name = $this->Escape($card['name']);
+		
+		$output = "<p>Renaming card.<p/>";
+		
+		$output .= "<form method='post' action='/wiki/Special:LegendsCardData'>";
+		$output .= "<input type='hidden' value='1' name='save'>";
+		$output .= "<input type='hidden' value='$name' name='rename'>";
+		
+		$output .= "<table class='eslegCardDetailsTable'>";
+		$output .= "<tr><th>Current Name</th><td>$name</td></tr>";
+		$output .= "<tr><th>New Name</th><td><input type='text' value=\"$name\" name='name' id='eslegCardInputName' maxlength='100'> <small>Must not currently exist.</small></td></tr>";
+		$output .= "<tr class='eslegCardRowSave'><td colspan='2' class='eslegCardRowSave'><input type='submit' value='Rename'></td></tr>";
+		$output .= "</table>";
+		$output .= "</form>";
+	
+		return $output;
+	}
+	
+	
+	public function GetCardDeleteOutput()
+	{
+		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if ($this->singleCardData == null) return "No card matching '$safeName' found!";
+		
+		$output = "Not yet implemented....";
+	
 		return $output;
 	}
 	
@@ -689,7 +765,11 @@ class CUespLegendsCardDataViewer
 		if ($this->CanEditCard())
 		{
 			$safeName = urlencode($card['name']);
-			$output .= "<tr class='eslegCardRowSave'><td colspan='2' class='eslegCardDetailsEditRow'><a href='/wiki/Special:LegendsCardData?edit=$safeName'>Edit Card</a></td></tr>";
+			$output .= "<tr class='eslegCardRowSave'><td colspan='2' class='eslegCardDetailsEditRow'>";
+			$output .= "<a href='/wiki/Special:LegendsCardData?delete=$safeName' class='eslegCardEditWarn'>Delete</a> &nbsp; ";
+			$output .= "<a href='/wiki/Special:LegendsCardData?rename=$safeName' class='eslegCardEditWarn'>Rename</a> &nbsp; ";
+			$output .= "<a href='/wiki/Special:LegendsCardData?edit=$safeName'>Edit Card</a>";
+			$output .= "</td></tr>";
 		}
 		
 		$output .= "<tr><th>Name</th><td>$name</td></tr>";
@@ -767,7 +847,7 @@ class CUespLegendsCardDataViewer
 	
 	public function UpdateCardImage($name, $image)
 	{
-		if ($image == "") return true;
+		if ($image == null || $image == "") return true;
 		
 		$result = CreateLegendsPopupImage($name, $image, "/mnt/uesp/legendscards/");
 		
@@ -781,6 +861,20 @@ class CUespLegendsCardDataViewer
 	}
 	
 	
+	public function GetFullImagePath($inputImage)
+	{
+		if ($inputImage == null || $inputImage == "") return "";
+		
+		$image = "";
+		$imageBase = $inputImage;
+		$imageBase = preg_replace("# #", "_", $imageBase);
+		$imageHash = GetLegendsImagePathHash($imageBase);
+		if ($imageBase != "") $image = "/" . $imageHash . $imageBase;
+		
+		return $image;
+	}
+	
+	
 	public function SaveCard()
 	{
 		if (!$this->InitDatabaseWrite()) return false;
@@ -790,11 +884,7 @@ class CUespLegendsCardDataViewer
 		$subtype = $this->db->real_escape_string($this->inputCardData['subtype']);
 		$text = $this->db->real_escape_string($this->inputCardData['text']);
 		
-		$image = "";
-		$imageBase = $this->inputCardData['image'];
-		$imageBase = preg_replace("# #", "_", $imageBase);
-		$imageHash = GetLegendsImagePathHash($imageBase);
-		if ($imageBase != "") $image = "/" . $imageHash . $imageBase;
+		$image = $this->GetFullImagePath($this->inputCardData['image']);
 		$safeImage = $this->db->real_escape_string($image);
 		
 		$class = $this->db->real_escape_string($this->inputCardData['class']);
@@ -988,6 +1078,55 @@ class CUespLegendsCardDataViewer
 	}
 	
 	
+	public function GetCardSaveRenameOutput()
+	{
+		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		if (!$this->InitDatabaseWrite()) return "Database error!";
+		
+		if (!$this->LoadCardData()) return "Error: Failed to load the Legends card data!";
+		
+		$output = "";
+		
+		$origName = $this->inputRenameCard;
+		$newName = $this->inputCardName;
+		$safeOrigName = $this->Escape($origName);
+		$safeNewName = $this->Escape($newName);
+		
+		if ($this->DoesCardExist($newName))
+		{
+			$output .= "<div class='eslegCardRenameWarning'>Error: Could not rename card '<em>$safeOrigName</em>'! The card '<em>$safeNewName</em>' already exists!</div>";
+			$this->LoadCardData();
+			$output .= $this->GetCardRenameOutput();
+			return $output;
+		}
+		
+		$safeNewNameDB = $this->db->real_escape_string($newName);
+		$safeOrigNameDB = $this->db->real_escape_string($origName);
+		$query = "UPDATE cards SET name='$safeNewNameDB' WHERE name='$safeOrigNameDB';";
+		
+		$result = $this->db->query($query);
+		if ($result === false) return "Error: Failed to rename the card '<em>$safeOrigName</em>' to '<em>$safeNewName</em>'!<br/>" . $this->db->error;
+		
+		$image = $this->singleCardData['image'];
+		$output .= "{$this->singleCardData['name']} : $image : $newName<br/>";
+		$result = $this->UpdateCardImage($newName, $image);
+		if (!$result) $output .= "Failed to update card image!<br/>";
+		
+		$output .= "Successfully renamed the card '<em>$safeOrigName</em>' to '<em>$safeNewName</em>'!";
+		return $output;
+	}
+	
+	
+	public function GetCardSaveDeleteOutput()
+	{
+		if (!$this->CanEditCard()) return "You do not have permission to edit card data!";
+		
+		$output = "Not implemented yet...";
+		
+		return $output;
+	}
+	
+	
 	public function GetCardSaveOutput()
 	{
 		$output = "";
@@ -1039,7 +1178,12 @@ class CUespLegendsCardDataViewer
 		
 		if ($this->inputSaveCard)
 		{
-			$output .= $this->GetCardSaveOutput();
+			if ($this->inputRenameCard != "")
+				$output .= $this->GetCardSaveRenameOutput();
+			else if ($this->inputDeleteCard != "")
+				$output .= $this->GetCardSaveDeleteOutput();
+			else
+				$output .= $this->GetCardSaveOutput();
 		}
 		else if ($this->inputCreateCard)
 		{
@@ -1056,6 +1200,16 @@ class CUespLegendsCardDataViewer
 		{
 			if (!$this->LoadCardData()) return "Error: Failed to load the Legends card data!";
 			$output .= $this->GetCardEditOutput();
+		}
+		else if ($this->inputRenameCard != "")
+		{
+			if (!$this->LoadCardData()) return "Error: Failed to load the Legends card data!";
+			$output .= $this->GetCardRenameOutput();
+		}
+		else if ($this->inputDeleteCard != "")
+		{
+			if (!$this->LoadCardData()) return "Error: Failed to load the Legends card data!";
+			$output .= $this->GetCardDeleteOutput();
 		}
 		else
 		{

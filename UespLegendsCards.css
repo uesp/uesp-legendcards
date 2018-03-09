@@ -170,3 +170,17 @@
 	width: 150px;
 	margin: 3px;
 }
+
+.eslegCardEditWarn {
+	color: #c00 !important;
+    font-weight: bold;	
+}
+
+.eslegCardEditWarn:hover {
+}
+
+.eslegCardRenameWarning {
+	background-color: #fcc;
+	padding: 5px;
+	border: solid 1px gray;	
+}
