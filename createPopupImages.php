@@ -21,7 +21,9 @@ while (($card = $queryResult->fetch_assoc()))
 {
 	$cardCount++;
 	
-	$result = CreateLegendsPopupImage($card['name'], $card['image'], "./cardimages/", true);
+	//$result = CreateLegendsPopupImage($card['name'], $card['image'], "./cardimages/", true);
+	$result = CreateLegendsPopupImage($card['name'], $card['image'], "/mnt/uesp/legendscards/", true);
+	
 	if ($result) $imageCount++;
 }
 
