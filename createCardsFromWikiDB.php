@@ -1,5 +1,7 @@
 <?php
 
+$ONLY_UPDATE_CARD_TEXT = true;
+
 if (php_sapi_name() != "cli") die("Can only be run from command line!");
 
 print("\tImporting new Legends card data from wiki pages...\n");
@@ -222,9 +224,18 @@ foreach ($cards as $name => $card)
 	}
 	else
 	{
-		$writeQuery  = "UPDATE cards SET ";
-		$writeQuery .= $setQuery;
-		$writeQuery .= " WHERE name='$name';";				
+		if ($ONLY_UPDATE_CARD_TEXT)
+		{
+			$writeQuery  = "UPDATE cards SET ";
+			$writeQuery .= " text='$text' ";
+			$writeQuery .= " WHERE name='$name';";
+		}
+		else
+		{
+			$writeQuery  = "UPDATE cards SET ";
+			$writeQuery .= $setQuery;
+			$writeQuery .= " WHERE name='$name';";
+		}
 	}	
 	
 	$result = $db->query($writeQuery);
