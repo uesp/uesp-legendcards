@@ -13,14 +13,85 @@ require_once("legendsCommon.php");
 class CUespLegendsCardDataViewer
 {
 	
-	static $LEGENDS_TYPES = array("Action", "Creature", "Item", "Support");
-	static $LEGENDS_SUBTYPES = array("Argonian", "Ash Creature", "Beast", "Breton", "Centaur", "Chaurus", "Daedra", "Dark Elf", "Defense", 
-					"Dragon", "Dreugh", "Dwemer", "Fabricant", "Factotum", "Falmer", "Fish", "Gargoyle", "Giant", "Goblin", "Harpy", "High Elf",
-					"Imp", "Imperfect", "Imperial", "Khajiit", "Kwama", "Lurcher", "Mammoth", "Mantikora","Minotaur", "Mudcrab", "Mummy", "Nereid", "Nord",
-					"Ogre", "Orc", "Pastry", "Reachman", "Redguard", "Reptile", "Skeever", "Skeleton", "Spider", "Spirit", "Spriggan", "Troll", "Undead", 
-					"Vampire", "Wamasu", "Werewolf", "Wolf", "Wood Elf", "Wraith" );
-	static $LEGENDS_ATTRIBUTES = array("Agility", "Endurance", "Intelligence", "Neutral", "Strength", "Willpower");
-	static $LEGENDS_RARITIES = array("Common", "Rare", "Epic", "Legendary");
+	static $LEGENDS_TYPES = array(
+			"Action", 
+			"Creature",
+			"Item", 
+			"Support"
+	);
+	
+	static $LEGENDS_SUBTYPES = array(
+			"Argonian",
+			"Ash Creature", 
+			"Beast", 
+			"Breton", 
+			"Centaur", 
+			"Chaurus", 
+			"Daedra", 
+			"Dark Elf", 
+			"Defense", 
+			"Dragon", 
+			"Dreugh", 
+			"Dwemer", 
+			"Fabricant", 
+			"Factotum", 
+			"Falmer", 
+			"Fish", 
+			"Gargoyle", 
+			"Giant", 
+			"Goblin", 
+			"Harpy", 
+			"High Elf",
+			"Imp", 
+			"Imperfect",
+			"Imperial", 
+			"Insect", 
+			"Khajiit", 
+			"Kwama", 
+			"Lurcher", 
+			"Mammoth", 
+			"Mantikora",
+			"Minotaur", 
+			"Mudcrab", 
+			"Mummy", 
+			"Nereid", 
+			"Nord",
+			"Ogre", 
+			"Orc", 
+			"Pastry", 
+			"Reachman", 
+			"Redguard", 
+			"Reptile",
+			"Skeever", 
+			"Skeleton", 
+			"Spider", 
+			"Spirit", 
+			"Spriggan", 
+			"Troll", 
+			"Undead", 
+			"Vampire", 
+			"Wamasu", 
+			"Werewolf", 
+			"Wolf", 
+			"Wood Elf", 
+			"Wraith" 
+	);
+	
+	static $LEGENDS_ATTRIBUTES = array(
+			"Agility", 
+			"Endurance", 
+			"Intelligence", 
+			"Neutral", 
+			"Strength", 
+			"Willpower"
+	);
+	
+	static $LEGENDS_RARITIES = array(
+			"Common", 
+			"Rare", 
+			"Epic", 
+			"Legendary"
+	);
 	
 				/* Loaded from database */
 	static $LEGENDS_SETS = null;
@@ -30,11 +101,16 @@ class CUespLegendsCardDataViewer
 			"Assassin",
 			"Battlemage",
 			"Crusader",
+			"House Dagoth",
+			"House Hlaalu",
+			"House Redoran",
+			"House Telvanni",
 			"Mage",
 			"Monk",
 			"Scout",
 			"Sorcerer",
 			"Spellsword",
+			"Tribunal Temple",
 			"Warrior",			
 	);
 	
@@ -68,6 +144,7 @@ class CUespLegendsCardDataViewer
 			'rarity' => '',
 			'attribute' => '',
 			'attribute2' => '',
+			'attribute3' => '',
 			'class' => '',
 			'set' => '',
 			'magicka' => 0,
@@ -127,6 +204,7 @@ class CUespLegendsCardDataViewer
 		if ($this->inputParams['attribute'] !== null) $this->inputCardData['attribute'] = $this->inputParams['attribute'];
 		if ($this->inputParams['attribute1'] !== null) $this->inputCardData['attribute'] = $this->inputParams['attribute1'];
 		if ($this->inputParams['attribute2'] !== null) $this->inputCardData['attribute2'] = $this->inputParams['attribute2'];
+		if ($this->inputParams['attribute3'] !== null) $this->inputCardData['attribute3'] = $this->inputParams['attribute3'];
 		if ($this->inputParams['rarity'] !== null) $this->inputCardData['rarity'] = $this->inputParams['rarity'];
 		if ($this->inputParams['magicka'] !== null) $this->inputCardData['magicka'] = intval($this->inputParams['magicka']);
 		if ($this->inputParams['power'] !== null) $this->inputCardData['power'] = intval($this->inputParams['power']);
@@ -277,7 +355,7 @@ class CUespLegendsCardDataViewer
 		if ($this->inputCardData['attribute'] != "")
 		{
 			$safeValue = $this->db->real_escape_string($this->inputCardData['attribute']);
-			$where[] = "(attribute='$safeValue' OR attribute2='$safeValue')";
+			$where[] = "(attribute='$safeValue' OR attribute2='$safeValue' OR attribute3='$safeValue')";
 		}
 		
 		if ($this->inputCardData['type'] != "")
@@ -518,6 +596,7 @@ class CUespLegendsCardDataViewer
 		$subtype = $this->Escape($card['subtype']);
 		$attribute1 = $this->Escape($card['attribute']);
 		$attribute2 = $this->Escape($card['attribute2']);
+		$attribute3 = $this->Escape($card['attribute3']);
 		$class = $this->Escape($card['class']);
 		$set = $this->Escape($card['set']);
 		$rarity = $this->Escape($card['rarity']);
@@ -546,6 +625,7 @@ class CUespLegendsCardDataViewer
 		
 		$attribute = $attribute1;
 		if ($attribute2 != "") $attribute .= "+$attribute2";
+		if ($attribute3 != "") $attribute .= "+$attribute3";
 		
 		if ($obtainable == 1)
 			$obtainable = "Yes";
@@ -792,6 +872,7 @@ class CUespLegendsCardDataViewer
 		$subtype = $this->Escape($card['subtype']);
 		$attribute1 = $this->Escape($card['attribute']);
 		$attribute2 = $this->Escape($card['attribute2']);
+		$attribute3 = $this->Escape($card['attribute3']);
 		$class = $this->Escape($card['class']);
 		$set = $this->Escape($card['set']);
 		$rarity = $this->Escape($card['rarity']);
@@ -850,6 +931,7 @@ class CUespLegendsCardDataViewer
 		$raceList = $this->CreateEditListOutput(self::$LEGENDS_SUBTYPES, $card['subtype'], "Subtype");
 		$attr1List = $this->CreateEditListOutput(self::$LEGENDS_ATTRIBUTES, $card['attribute'], "Attribute1");
 		$attr2List = $this->CreateEditListOutput(self::$LEGENDS_ATTRIBUTES, $card['attribute2'], "Attribute2");
+		$attr3List = $this->CreateEditListOutput(self::$LEGENDS_ATTRIBUTES, $card['attribute3'], "Attribute3");
 		$classList = $this->CreateEditListOutput(self::$LEGENDS_CLASSES, $card['class'], "Class");
 		$setList = $this->CreateEditListOutput(self::$LEGENDS_SETS, $card['set'], "Set");
 		$rarityList = $this->CreateEditListOutput(self::$LEGENDS_RARITIES, $card['rarity'], "Rarity");
@@ -870,6 +952,7 @@ class CUespLegendsCardDataViewer
 		$output .= "<tr><th>Health</th><td><input type='text' value='$health' name='health' id='eslegCardInputHealth' maxlength='10'></td></tr>";
 		$output .= "<tr><th>Attribute 1</th><td>$attr1List</td></tr>";
 		$output .= "<tr><th>Attribute 2</th><td>$attr2List</td></tr>";
+		$output .= "<tr><th>Attribute 3</th><td>$attr3List</td></tr>";
 		$output .= "<tr><th>Class</th><td>$classList</td></tr>";
 		$output .= "<tr><th>Set</th><td>$setList</td></tr>";
 		$output .= "<tr><th>Rarity</th><td>$rarityList</td></tr>";
@@ -955,6 +1038,7 @@ class CUespLegendsCardDataViewer
 		$subtype = $this->Escape($card['subtype']);
 		$attribute1 = $this->Escape($card['attribute']);
 		$attribute2 = $this->Escape($card['attribute2']);
+		$attribute3 = $this->Escape($card['attribute3']);
 		$class = $this->Escape($card['class']);
 		$set = $this->Escape($card['set']);
 		$rarity = $this->Escape($card['rarity']);
@@ -1018,6 +1102,7 @@ class CUespLegendsCardDataViewer
 		$output .= "<tr><th>Health</th><td>$health</td></tr>";
 		$output .= "<tr><th>Attribute 1</th><td>$attribute1</td></tr>";
 		$output .= "<tr><th>Attribute 2</th><td>$attribute2</td></tr>";
+		$output .= "<tr><th>Attribute 3</th><td>$attribute3</td></tr>";
 		$output .= "<tr><th>Class</th><td>$class</td></tr>";
 		$output .= "<tr><th>Set</th><td>$set</td></tr>";
 		$output .= "<tr><th>Rarity</th><td>$rarity</td></tr>";
@@ -1131,6 +1216,7 @@ class CUespLegendsCardDataViewer
 		$uses = $this->db->real_escape_string($this->inputCardData['uses']);
 		$attribute1 = $this->db->real_escape_string($this->inputCardData['attribute']);
 		$attribute2 = $this->db->real_escape_string($this->inputCardData['attribute2']);
+		$attribute3 = $this->db->real_escape_string($this->inputCardData['attribute3']);
 		$training1 = $this->db->real_escape_string($this->inputCardData['training1']);
 		$training2 = $this->db->real_escape_string($this->inputCardData['training2']);
 		$trainingLevel1 = $this->inputCardData['trainingLevel1'];
@@ -1173,6 +1259,7 @@ class CUespLegendsCardDataViewer
 		$query .= " uses='$uses',";
 		$query .= " attribute='$attribute1',";
 		$query .= " attribute2='$attribute2',";
+		$query .= " attribute3='$attribute3',";
 		$query .= " `class`='$class',";
 		$query .= " `set`='$set',";
 		$query .= " rarity='$rarity',";
