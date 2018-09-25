@@ -155,9 +155,9 @@ function CreateLegendsPopupImage($cardName, $imageBaseName, $outputPath = null, 
 	$width = $UESP_LEGENDS_CARD_WIDTH;
 	$height = $UESP_LEGENDS_CARD_HEIGHT;
 	
-	$imageFilename = $UESP_LEGENDS_WIKIIMAGEPATH . $imageBaseName;
+	$imageFilename = str_replace('//', '/', $UESP_LEGENDS_WIKIIMAGEPATH . $imageBaseName);
 	$outputFilename = $outputPath . $cardName . ".png";
-	
+		
 	if ($imageBaseName == "")
 	{
 		if ($print) print("\t$cardName: Has no image file set!\n");
