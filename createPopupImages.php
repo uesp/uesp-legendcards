@@ -21,8 +21,20 @@ while (($card = $queryResult->fetch_assoc()))
 {
 	$cardCount++;
 	
+	$obtainable = $card['obtainable'];
+	
 	//$result = CreateLegendsPopupImage($card['name'], $card['image'], "./cardimages/", true);
-	$result = CreateLegendsPopupImage($card['name'], $card['image'], "/mnt/uesp/legendscards/", true);
+	
+	if ($obtainable)
+	{
+		//print ("Making card {$card['name']}...\n");
+		$result = CreateLegendsPopupImage($card['name'], $card['image'], "/mnt/uesp/legendscards/", true);
+	}
+	else
+	{
+		print ("\tSkipping unobtainable card {$card['name']}...\n");
+	}
+	
 	
 	if ($result) $imageCount++;
 }
