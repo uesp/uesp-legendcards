@@ -1,10 +1,10 @@
-var LegendsCardPopup = null;
-var LegendsCardPopup_Image = null;
-var LegendsCardPopup_LastElement = null;
-var LegendsCardPopup_Visible = false;
-var LegendsCardPopup_Error = false;
-//var EsoItemLinkPopup_CacheId = "";
-//var EsoItemLinkPopup_Cache = { };
+window.LegendsCardPopup = null;
+window.LegendsCardPopup_Image = null;
+window.LegendsCardPopup_LastElement = null;
+window.LegendsCardPopup_Visible = false;
+window.LegendsCardPopup_Error = false;
+//window.EsoItemLinkPopup_CacheId = "";
+//window.EsoItemLinkPopup_Cache = { };
 
 
 function CreateLegendsCardPopup()
