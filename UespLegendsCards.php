@@ -60,7 +60,7 @@ $wgResourceModules['ext.LegendCards.scripts'] = array(
 function uespLegendsCardData_beforePageDisplay(&$out) 
 {
 	global $wgScriptPath;
-		
+	
 	$out->addHeadItem("uesp-legendscards-css", "<link rel='stylesheet' href='//en.uesp.net/w/extensions/UespLegendsCards/UespLegendsCards.css?version=11Dec2017' />");
 	$out->addHeadItem("uesp-legendscards-js", "<script src='//en.uesp.net/w/extensions/UespLegendsCards/UespLegendsCards.js?version=11Dec2017'></script>");
 	
