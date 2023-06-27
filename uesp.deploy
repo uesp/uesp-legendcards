@@ -14,3 +14,6 @@ ignore = cron*
 dest = content1.uesp.net:/home/uesp/www/w/extensions/UespLegendsCards/
 dest = content2.uesp.net:/home/uesp/www/w/extensions/UespLegendsCards/
 dest = content3.uesp.net:/home/uesp/www/w/extensions/UespLegendsCards/
+
+destname = [backup]backup1.uesp.net:/home/uesp/www/w/extensions/UespLegendsCards/
+destname = [dev]content3.uesp.net:/home/uesp/dev/www/w/extensions/UespLegendsCards/
